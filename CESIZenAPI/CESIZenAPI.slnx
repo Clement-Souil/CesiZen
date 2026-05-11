@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="CESIZenAPI.Tests/CESIZenAPI.Tests.csproj" Id="b05153ae-af42-41c2-82ce-537a0e884ad2" />
+  <Project Path="CESIZenAPI/CESIZenAPI.csproj" />
+</Solution>
