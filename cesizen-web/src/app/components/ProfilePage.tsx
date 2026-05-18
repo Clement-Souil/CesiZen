@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { User, LogOut, Calendar, Activity, Loader2 } from "lucide-react";
+import { User, LogOut, Calendar, Activity, Loader2, KeyRound } from "lucide-react";
 import { Button } from "./ui/button";
-import api from "../../api/axios"; // Import de ton instance API configurée
+import api from "../../api/axios";
 
 interface ProfilePageProps {
     userEmail: string | null;
@@ -12,6 +12,28 @@ export function ProfilePage({ userEmail, onLogout }: ProfilePageProps) {
     // 1. ÉTATS : On crée une mémoire pour l'historique et pour le chargement
     const [history, setHistory] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+
+    // Changement de mot de passe
+    const [showPwdForm, setShowPwdForm] = useState(false);
+    const [currentPwd, setCurrentPwd] = useState('');
+    const [newPwd, setNewPwd] = useState('');
+    const [pwdMsg, setPwdMsg] = useState<{ ok: boolean; text: string } | null>(null);
+    const [pwdLoading, setPwdLoading] = useState(false);
+
+    const handleChangePassword = async () => {
+        if (!currentPwd || !newPwd) { setPwdMsg({ ok: false, text: 'Remplissez les deux champs.' }); return; }
+        if (newPwd.length < 6) { setPwdMsg({ ok: false, text: 'Le nouveau mot de passe doit faire au moins 6 caractères.' }); return; }
+        setPwdLoading(true);
+        try {
+            await api.put('/Users/change-password', { currentPassword: currentPwd, newPassword: newPwd });
+            setPwdMsg({ ok: true, text: 'Mot de passe modifié avec succès !' });
+            setCurrentPwd(''); setNewPwd('');
+        } catch {
+            setPwdMsg({ ok: false, text: 'Mot de passe actuel incorrect.' });
+        } finally {
+            setPwdLoading(false);
+        }
+    };
 
     // 2. EFFET : On va chercher les données en base SQL dès que le composant s'affiche
     useEffect(() => {
@@ -85,6 +107,48 @@ export function ProfilePage({ userEmail, onLogout }: ProfilePageProps) {
                             </div>
                         )}
                     </div>
+                </div>
+
+                {/* Section changement de mot de passe */}
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-teal-100 mb-6">
+                    <button
+                        onClick={() => { setShowPwdForm(v => !v); setPwdMsg(null); }}
+                        className="flex items-center gap-2 text-teal-700 font-semibold w-full"
+                    >
+                        <KeyRound className="w-5 h-5" />
+                        Changer mon mot de passe
+                        <span className="ml-auto text-teal-400">{showPwdForm ? '▲' : '▼'}</span>
+                    </button>
+                    {showPwdForm && (
+                        <div className="mt-4 space-y-3">
+                            <input
+                                type="password"
+                                placeholder="Mot de passe actuel"
+                                value={currentPwd}
+                                onChange={e => setCurrentPwd(e.target.value)}
+                                className="w-full border border-teal-200 rounded-xl px-4 py-2 text-sm"
+                            />
+                            <input
+                                type="password"
+                                placeholder="Nouveau mot de passe (6 caractères min.)"
+                                value={newPwd}
+                                onChange={e => setNewPwd(e.target.value)}
+                                className="w-full border border-teal-200 rounded-xl px-4 py-2 text-sm"
+                            />
+                            {pwdMsg && (
+                                <p className={`text-sm font-medium ${pwdMsg.ok ? 'text-green-600' : 'text-red-600'}`}>
+                                    {pwdMsg.text}
+                                </p>
+                            )}
+                            <Button
+                                onClick={handleChangePassword}
+                                disabled={pwdLoading}
+                                className="w-full bg-teal-600 text-white hover:bg-teal-700 py-2"
+                            >
+                                {pwdLoading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Modifier le mot de passe'}
+                            </Button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Bouton Déconnexion */}

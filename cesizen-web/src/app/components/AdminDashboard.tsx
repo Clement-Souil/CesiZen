@@ -19,12 +19,19 @@ interface Resource {
     isApproved: boolean;
 }
 
+interface StressEvent {
+    id: number;
+    event: string;
+    value: number;
+}
+
 const CATEGORIES = ['Stress', 'Anxiété', 'Dépression', 'Bien-être', 'Relations', 'Autre'];
 
 const emptyResource = { title: '', description: '', content: '', category: 'Stress' };
+const emptyEvent = { event: '', value: 0 };
 
 const AdminDashboard = () => {
-    const [activeTab, setActiveTab] = useState<'users' | 'resources'>('users');
+    const [activeTab, setActiveTab] = useState<'users' | 'resources' | 'stress'>('users');
 
     // --- Utilisateurs ---
     const [users, setUsers] = useState<User[]>([]);
@@ -35,18 +42,26 @@ const AdminDashboard = () => {
     const [editingResource, setEditingResource] = useState<Resource | null>(null);
     const [form, setForm] = useState(emptyResource);
 
+    // --- Stress Events ---
+    const [stressEvents, setStressEvents] = useState<StressEvent[]>([]);
+    const [showEventForm, setShowEventForm] = useState(false);
+    const [editingEvent, setEditingEvent] = useState<StressEvent | null>(null);
+    const [eventForm, setEventForm] = useState(emptyEvent);
+
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [usersRes, resourcesRes] = await Promise.all([
+                const [usersRes, resourcesRes, eventsRes] = await Promise.all([
                     api.get('users/all'),
                     api.get('Resources/admin'),
+                    api.get('StressEvents'),
                 ]);
                 setUsers(usersRes.data);
                 setResources(resourcesRes.data);
+                setStressEvents(eventsRes.data);
             } catch {
                 setError("Erreur lors du chargement des données.");
             } finally {
@@ -140,6 +155,48 @@ const AdminDashboard = () => {
         }
     };
 
+    // --- Actions stress events ---
+    const openCreateEvent = () => {
+        setEditingEvent(null);
+        setEventForm(emptyEvent);
+        setShowEventForm(true);
+    };
+
+    const openEditEvent = (ev: StressEvent) => {
+        setEditingEvent(ev);
+        setEventForm({ event: ev.event, value: ev.value });
+        setShowEventForm(true);
+    };
+
+    const handleSubmitEvent = async () => {
+        if (!eventForm.event.trim() || eventForm.value <= 0) {
+            alert("L'événement et la valeur (> 0) sont obligatoires.");
+            return;
+        }
+        try {
+            if (editingEvent) {
+                await api.put(`StressEvents/${editingEvent.id}`, { ...editingEvent, ...eventForm });
+                setStressEvents(prev => prev.map(e => e.id === editingEvent.id ? { ...e, ...eventForm } : e));
+            } else {
+                const res = await api.post('StressEvents', eventForm);
+                setStressEvents(prev => [...prev, res.data]);
+            }
+            setShowEventForm(false);
+        } catch {
+            alert("Erreur lors de l'enregistrement.");
+        }
+    };
+
+    const handleDeleteEvent = async (id: number) => {
+        if (!window.confirm("Supprimer cet événement ?")) return;
+        try {
+            await api.delete(`StressEvents/${id}`);
+            setStressEvents(prev => prev.filter(e => e.id !== id));
+        } catch {
+            alert("Erreur lors de la suppression.");
+        }
+    };
+
     if (loading) return (
         <div className="flex items-center justify-center min-h-screen">
             <p className="text-teal-600 text-lg">Chargement...</p>
@@ -165,6 +222,12 @@ const AdminDashboard = () => {
                     className={`px-4 py-2 font-medium rounded-t-lg transition-colors ${activeTab === 'resources' ? 'bg-teal-600 text-white' : 'text-teal-600 hover:bg-teal-50'}`}
                 >
                     Ressources ({resources.length})
+                </button>
+                <button
+                    onClick={() => setActiveTab('stress')}
+                    className={`px-4 py-2 font-medium rounded-t-lg transition-colors ${activeTab === 'stress' ? 'bg-teal-600 text-white' : 'text-teal-600 hover:bg-teal-50'}`}
+                >
+                    Questionnaire de stress ({stressEvents.length})
                 </button>
             </div>
 
@@ -343,6 +406,76 @@ const AdminDashboard = () => {
                                                 onClick={() => handleDeleteResource(res.id)}
                                                 className="px-3 py-1 rounded-lg text-xs font-medium bg-red-100 text-red-700 hover:bg-red-200"
                                             >
+                                                Supprimer
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+            {/* === ONGLET QUESTIONNAIRE DE STRESS === */}
+            {activeTab === 'stress' && (
+                <div>
+                    <div className="flex justify-end mb-4">
+                        <button onClick={openCreateEvent} className="bg-teal-600 text-white px-4 py-2 rounded-xl hover:bg-teal-700 font-medium">
+                            + Nouvel événement
+                        </button>
+                    </div>
+
+                    {showEventForm && (
+                        <div className="bg-teal-50 border border-teal-200 rounded-2xl p-6 mb-6">
+                            <h2 className="text-lg font-semibold text-teal-800 mb-4">
+                                {editingEvent ? 'Modifier l\'événement' : 'Nouvel événement de stress'}
+                            </h2>
+                            <div className="grid gap-3">
+                                <input
+                                    type="text"
+                                    placeholder="Événement de vie *"
+                                    value={eventForm.event}
+                                    onChange={e => setEventForm(f => ({ ...f, event: e.target.value }))}
+                                    className="border border-teal-200 rounded-xl px-4 py-2 w-full"
+                                />
+                                <input
+                                    type="number"
+                                    placeholder="Points associés *"
+                                    value={eventForm.value || ''}
+                                    onChange={e => setEventForm(f => ({ ...f, value: parseInt(e.target.value) || 0 }))}
+                                    className="border border-teal-200 rounded-xl px-4 py-2 w-full"
+                                />
+                                <div className="flex gap-3">
+                                    <button onClick={handleSubmitEvent} className="bg-teal-600 text-white px-6 py-2 rounded-xl hover:bg-teal-700">
+                                        {editingEvent ? 'Enregistrer' : 'Créer'}
+                                    </button>
+                                    <button onClick={() => setShowEventForm(false)} className="bg-gray-200 text-gray-700 px-6 py-2 rounded-xl hover:bg-gray-300">
+                                        Annuler
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="bg-white rounded-2xl shadow-sm border border-teal-100 overflow-hidden">
+                        <table className="w-full text-sm">
+                            <thead className="bg-teal-50 text-teal-800">
+                                <tr>
+                                    <th className="px-4 py-3 text-left">Événement</th>
+                                    <th className="px-4 py-3 text-left w-24">Points</th>
+                                    <th className="px-4 py-3 text-left w-32">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-teal-50">
+                                {stressEvents.map(ev => (
+                                    <tr key={ev.id}>
+                                        <td className="px-4 py-3">{ev.event}</td>
+                                        <td className="px-4 py-3 font-bold text-teal-700">{ev.value}</td>
+                                        <td className="px-4 py-3 flex gap-2">
+                                            <button onClick={() => openEditEvent(ev)} className="px-3 py-1 rounded-lg text-xs font-medium bg-blue-100 text-blue-700 hover:bg-blue-200">
+                                                Modifier
+                                            </button>
+                                            <button onClick={() => handleDeleteEvent(ev.id)} className="px-3 py-1 rounded-lg text-xs font-medium bg-red-100 text-red-700 hover:bg-red-200">
                                                 Supprimer
                                             </button>
                                         </td>

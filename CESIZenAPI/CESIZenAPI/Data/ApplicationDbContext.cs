@@ -16,6 +16,7 @@ namespace CESIZenAPI.Data
         public DbSet<StressResults> StressResults { get; set; }
 
         public DbSet<Resource> Resources { get; set; }
+        public DbSet<StressEvent> StressEvents { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

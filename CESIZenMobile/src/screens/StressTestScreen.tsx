@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View, Text, TouchableOpacity, StyleSheet, ScrollView, SafeAreaView,
     ActivityIndicator,
@@ -12,52 +12,6 @@ interface StressEvent {
     value: number;
 }
 
-const stressEvents: StressEvent[] = [
-    { id: 1, event: "Décès d'un conjoint", value: 100 },
-    { id: 2, event: "Divorce", value: 73 },
-    { id: 3, event: "Séparation conjugale", value: 65 },
-    { id: 4, event: "Emprisonnement", value: 63 },
-    { id: 5, event: "Décès d'un membre proche de la famille", value: 63 },
-    { id: 6, event: "Maladie ou blessure personnelle", value: 53 },
-    { id: 7, event: "Mariage", value: 50 },
-    { id: 8, event: "Licenciement", value: 47 },
-    { id: 9, event: "Réconciliation conjugale", value: 45 },
-    { id: 10, event: "Retraite", value: 45 },
-    { id: 11, event: "Changement dans la santé d'un membre de la famille", value: 44 },
-    { id: 12, event: "Grossesse", value: 40 },
-    { id: 13, event: "Difficultés sexuelles", value: 39 },
-    { id: 14, event: "Arrivée d'un nouveau membre dans la famille", value: 39 },
-    { id: 15, event: "Changement important au travail", value: 39 },
-    { id: 16, event: "Changement de situation financière", value: 38 },
-    { id: 17, event: "Décès d'un ami proche", value: 37 },
-    { id: 18, event: "Changement de type de travail", value: 36 },
-    { id: 19, event: "Changement dans le nombre de disputes conjugales", value: 35 },
-    { id: 20, event: "Emprunt important", value: 31 },
-    { id: 21, event: "Saisie d'un prêt ou d'une hypothèque", value: 30 },
-    { id: 22, event: "Changement de responsabilités au travail", value: 29 },
-    { id: 23, event: "Départ d'un enfant de la maison", value: 29 },
-    { id: 24, event: "Problèmes avec la belle-famille", value: 29 },
-    { id: 25, event: "Réussite personnelle remarquable", value: 28 },
-    { id: 26, event: "Début ou arrêt de travail du conjoint", value: 26 },
-    { id: 27, event: "Début ou fin des études", value: 26 },
-    { id: 28, event: "Changement dans les conditions de vie", value: 25 },
-    { id: 29, event: "Révision des habitudes personnelles", value: 24 },
-    { id: 30, event: "Problèmes avec le patron", value: 23 },
-    { id: 31, event: "Changement d'horaires ou de conditions de travail", value: 20 },
-    { id: 32, event: "Changement de résidence", value: 20 },
-    { id: 33, event: "Changement d'école", value: 20 },
-    { id: 34, event: "Changement de loisirs", value: 19 },
-    { id: 35, event: "Changement d'activités religieuses", value: 19 },
-    { id: 36, event: "Changement d'activités sociales", value: 18 },
-    { id: 37, event: "Emprunt modéré", value: 17 },
-    { id: 38, event: "Changement dans les habitudes de sommeil", value: 16 },
-    { id: 39, event: "Changement du nombre de réunions familiales", value: 15 },
-    { id: 40, event: "Changement dans les habitudes alimentaires", value: 15 },
-    { id: 41, event: "Vacances", value: 13 },
-    { id: 42, event: "Fêtes de fin d'année", value: 12 },
-    { id: 43, event: "Infractions mineures à la loi", value: 11 },
-];
-
 const getInterpretation = (score: number) => {
     if (score < 150) return { level: 'Faible', color: '#16a34a', bg: '#f0fdf4', message: 'Votre niveau de stress est relativement faible (~30% de risque de maladie liée au stress).' };
     if (score < 300) return { level: 'Modéré', color: '#d97706', bg: '#fffbeb', message: 'Votre niveau de stress est modéré (~50% de risque). Pensez à pratiquer des techniques de relaxation.' };
@@ -69,9 +23,18 @@ interface Props {
 }
 
 export default function StressTestScreen({ user }: Props) {
+    const [stressEvents, setStressEvents] = useState<StressEvent[]>([]);
+    const [loadingEvents, setLoadingEvents] = useState(true);
     const [selected, setSelected] = useState<number[]>([]);
     const [showResult, setShowResult] = useState(false);
     const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        api.get('/StressEvents')
+            .then(res => setStressEvents(res.data))
+            .catch(() => {})
+            .finally(() => setLoadingEvents(false));
+    }, []);
 
     const toggle = (id: number) => {
         setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -100,6 +63,14 @@ export default function StressTestScreen({ user }: Props) {
         setSelected([]);
         setShowResult(false);
     };
+
+    if (loadingEvents) {
+        return (
+            <View style={styles.container}>
+                <ActivityIndicator size="large" color="#0d9488" style={{ marginTop: 60 }} />
+            </View>
+        );
+    }
 
     if (showResult) {
         return (

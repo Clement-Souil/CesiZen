@@ -23,12 +23,19 @@ interface Resource {
     isApproved: boolean;
 }
 
+interface StressEvent {
+    id: number;
+    event: string;
+    value: number;
+}
+
 const CATEGORIES = ['Stress', 'Anxiété', 'Dépression', 'Bien-être', 'Relations', 'Autre'];
 
 export default function AdminScreen() {
-    const [tab, setTab] = useState<'users' | 'resources'>('users');
+    const [tab, setTab] = useState<'users' | 'resources' | 'stress'>('users');
     const [users, setUsers] = useState<User[]>([]);
     const [resources, setResources] = useState<Resource[]>([]);
+    const [stressEvents, setStressEvents] = useState<StressEvent[]>([]);
     const [loading, setLoading] = useState(true);
 
     // Formulaire ressource
@@ -39,15 +46,79 @@ export default function AdminScreen() {
     const [formContent, setFormContent] = useState('');
     const [formCat, setFormCat] = useState('Stress');
 
+    // Formulaire stress event
+    const [showStressForm, setShowStressForm] = useState(false);
+    const [editStress, setEditStress] = useState<StressEvent | null>(null);
+    const [stressEvtName, setStressEvtName] = useState('');
+    const [stressEvtValue, setStressEvtValue] = useState('');
+    const [stressSaving, setStressSaving] = useState(false);
+
     useEffect(() => {
         Promise.all([
             api.get('/users/all'),
             api.get('/Resources/admin'),
-        ]).then(([u, r]) => {
+            api.get('/StressEvents'),
+        ]).then(([u, r, s]) => {
             setUsers(u.data);
             setResources(r.data);
+            setStressEvents(s.data);
         }).catch(() => Alert.alert('Erreur', 'Impossible de charger les données.')).finally(() => setLoading(false));
     }, []);
+
+    // --- Actions stress events ---
+    const openCreateStress = () => {
+        setEditStress(null);
+        setStressEvtName('');
+        setStressEvtValue('');
+        setShowStressForm(true);
+    };
+
+    const openEditStress = (ev: StressEvent) => {
+        setEditStress(ev);
+        setStressEvtName(ev.event);
+        setStressEvtValue(String(ev.value));
+        setShowStressForm(true);
+    };
+
+    const saveStressEvent = async () => {
+        const val = parseInt(stressEvtValue, 10);
+        if (!stressEvtName.trim() || isNaN(val) || val <= 0) {
+            Alert.alert('Erreur', 'Nom obligatoire et valeur doit être un nombre positif.');
+            return;
+        }
+        setStressSaving(true);
+        try {
+            if (editStress) {
+                const updated = { ...editStress, event: stressEvtName.trim(), value: val };
+                await api.put(`/StressEvents/${editStress.id}`, updated);
+                setStressEvents(prev => prev.map(e => e.id === editStress.id ? updated : e));
+            } else {
+                const res = await api.post('/StressEvents', { event: stressEvtName.trim(), value: val });
+                setStressEvents(prev => [...prev, res.data]);
+            }
+            setShowStressForm(false);
+        } catch {
+            Alert.alert('Erreur', 'Enregistrement impossible.');
+        } finally {
+            setStressSaving(false);
+        }
+    };
+
+    const deleteStressEvent = (id: number) => {
+        Alert.alert('Supprimer', 'Supprimer cet événement du questionnaire ?', [
+            { text: 'Annuler', style: 'cancel' },
+            {
+                text: 'Supprimer', style: 'destructive', onPress: async () => {
+                    try {
+                        await api.delete(`/StressEvents/${id}`);
+                        setStressEvents(prev => prev.filter(e => e.id !== id));
+                    } catch {
+                        Alert.alert('Erreur', 'Suppression impossible.');
+                    }
+                }
+            }
+        ]);
+    };
 
     // --- Actions utilisateurs ---
     const toggleActive = async (user: User) => {
@@ -155,22 +226,30 @@ export default function AdminScreen() {
             <Text style={styles.title}>Administration</Text>
 
             {/* Onglets */}
-            <View style={styles.tabs}>
-                <TouchableOpacity style={[styles.tab, tab === 'users' && styles.tabActive]} onPress={() => setTab('users')}>
-                    <Text style={[styles.tabText, tab === 'users' && styles.tabTextActive]}>
-                        Utilisateurs ({users.length})
-                    </Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.tab, tab === 'resources' && styles.tabActive]} onPress={() => setTab('resources')}>
-                    <Text style={[styles.tabText, tab === 'resources' && styles.tabTextActive]}>
-                        Ressources ({resources.length})
-                    </Text>
-                </TouchableOpacity>
-            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabsScroll}>
+                <View style={styles.tabs}>
+                    <TouchableOpacity style={[styles.tab, tab === 'users' && styles.tabActive]} onPress={() => setTab('users')}>
+                        <Text style={[styles.tabText, tab === 'users' && styles.tabTextActive]}>
+                            Utilisateurs ({users.length})
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={[styles.tab, tab === 'resources' && styles.tabActive]} onPress={() => setTab('resources')}>
+                        <Text style={[styles.tabText, tab === 'resources' && styles.tabTextActive]}>
+                            Ressources ({resources.length})
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={[styles.tab, tab === 'stress' && styles.tabActive]} onPress={() => setTab('stress')}>
+                        <Text style={[styles.tabText, tab === 'stress' && styles.tabTextActive]}>
+                            Questionnaire ({stressEvents.length})
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
 
             {/* === UTILISATEURS === */}
             {tab === 'users' && (
                 <FlatList
+                    style={styles.flatList}
                     data={users}
                     keyExtractor={u => u.id}
                     contentContainerStyle={styles.list}
@@ -211,13 +290,16 @@ export default function AdminScreen() {
             {/* === RESSOURCES === */}
             {tab === 'resources' && (
                 <>
-                    <TouchableOpacity style={styles.addBtn} onPress={openCreate}>
-                        <Text style={styles.addBtnText}>+ Nouvelle ressource</Text>
-                    </TouchableOpacity>
                     <FlatList
+                        style={styles.flatList}
                         data={resources}
                         keyExtractor={r => String(r.id)}
                         contentContainerStyle={styles.list}
+                        ListHeaderComponent={
+                            <TouchableOpacity style={styles.addBtn} onPress={openCreate}>
+                                <Text style={styles.addBtnText}>+ Nouvelle ressource</Text>
+                            </TouchableOpacity>
+                        }
                         renderItem={({ item }) => (
                             <View style={styles.card}>
                                 <Text style={styles.cardName}>{item.title}</Text>
@@ -243,6 +325,78 @@ export default function AdminScreen() {
                     />
                 </>
             )}
+
+            {/* === QUESTIONNAIRE DE STRESS === */}
+            {tab === 'stress' && (
+                <>
+                    <FlatList
+                        style={styles.flatList}
+                        data={[...stressEvents].sort((a, b) => b.value - a.value)}
+                        keyExtractor={e => String(e.id)}
+                        contentContainerStyle={styles.list}
+                        ListHeaderComponent={
+                            <TouchableOpacity style={styles.addBtn} onPress={openCreateStress}>
+                                <Text style={styles.addBtnText}>+ Nouvel événement</Text>
+                            </TouchableOpacity>
+                        }
+                        renderItem={({ item }) => (
+                            <View style={styles.card}>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <Text style={[styles.cardName, { flex: 1, marginRight: 8 }]}>{item.event}</Text>
+                                    <View style={styles.valueBadge}>
+                                        <Text style={styles.valueBadgeText}>{item.value} pts</Text>
+                                    </View>
+                                </View>
+                                <View style={styles.actions}>
+                                    <TouchableOpacity style={[styles.btn, styles.btnSecondary]} onPress={() => openEditStress(item)}>
+                                        <Text style={styles.btnText}>Modifier</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={[styles.btn, styles.btnDanger]} onPress={() => deleteStressEvent(item.id)}>
+                                        <Text style={styles.btnText}>Supprimer</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        )}
+                    />
+                </>
+            )}
+
+            {/* Modal formulaire stress event */}
+            <Modal visible={showStressForm} animationType="slide" transparent onRequestClose={() => setShowStressForm(false)}>
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalBox}>
+                        <Text style={styles.formTitle}>{editStress ? 'Modifier l\'événement' : 'Nouvel événement'}</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Nom de l'événement *"
+                            value={stressEvtName}
+                            onChangeText={setStressEvtName}
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Valeur en points *"
+                            value={stressEvtValue}
+                            onChangeText={setStressEvtValue}
+                            keyboardType="numeric"
+                        />
+                        <View style={styles.formActions}>
+                            <TouchableOpacity
+                                style={[styles.btn, styles.btnPrimary, { flex: 1 }]}
+                                onPress={saveStressEvent}
+                                disabled={stressSaving}
+                            >
+                                {stressSaving
+                                    ? <ActivityIndicator color="#fff" />
+                                    : <Text style={styles.btnText}>{editStress ? 'Enregistrer' : 'Créer'}</Text>
+                                }
+                            </TouchableOpacity>
+                            <TouchableOpacity style={[styles.btn, styles.btnSecondary, { flex: 1 }]} onPress={() => setShowStressForm(false)}>
+                                <Text style={styles.btnText}>Annuler</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
 
             {/* Modal formulaire ressource */}
             <Modal visible={showForm} animationType="slide" onRequestClose={() => setShowForm(false)}>
@@ -281,12 +435,14 @@ const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f0fdfa' },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     title: { fontSize: 24, fontWeight: 'bold', color: '#0d9488', padding: 20, paddingBottom: 12 },
-    tabs: { flexDirection: 'row', marginHorizontal: 20, backgroundColor: '#e0f2f1', borderRadius: 12, padding: 4, marginBottom: 16 },
-    tab: { flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: 'center' },
+    tabsScroll: { flexGrow: 0, marginHorizontal: 20, marginBottom: 16 },
+    tabs: { flexDirection: 'row', backgroundColor: '#e0f2f1', borderRadius: 12, padding: 4, gap: 4 },
+    tab: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 8, alignItems: 'center' },
     tabActive: { backgroundColor: '#0d9488' },
     tabText: { color: '#0d9488', fontWeight: '600', fontSize: 13 },
     tabTextActive: { color: '#fff' },
-    list: { padding: 20, paddingTop: 0, gap: 12 },
+    flatList: { flex: 1 },
+    list: { padding: 20, paddingTop: 8, gap: 12 },
     card: { backgroundColor: '#fff', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#ccfbf1', gap: 6 },
     cardName: { fontSize: 15, fontWeight: '700', color: '#1f2937' },
     cardEmail: { fontSize: 13, color: '#6b7280' },
@@ -305,7 +461,7 @@ const styles = StyleSheet.create({
     btnSecondary: { backgroundColor: '#6b7280' },
     btnWarning: { backgroundColor: '#d97706' },
     btnDanger: { backgroundColor: '#dc2626' },
-    addBtn: { backgroundColor: '#0d9488', marginHorizontal: 20, marginBottom: 12, borderRadius: 12, padding: 12, alignItems: 'center' },
+    addBtn: { backgroundColor: '#0d9488', marginBottom: 12, borderRadius: 12, padding: 12, alignItems: 'center' },
     addBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
     // Formulaire modal
     formModal: { padding: 24, paddingTop: 48 },
@@ -320,4 +476,8 @@ const styles = StyleSheet.create({
     catText: { fontSize: 13, color: '#0d9488', fontWeight: '600' },
     catTextActive: { color: '#fff' },
     formActions: { flexDirection: 'row', gap: 12, marginTop: 8 },
+    valueBadge: { backgroundColor: '#ccfbf1', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
+    valueBadgeText: { color: '#0d9488', fontWeight: '700', fontSize: 13 },
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: 24 },
+    modalBox: { backgroundColor: '#fff', borderRadius: 20, padding: 24, gap: 0 },
 });

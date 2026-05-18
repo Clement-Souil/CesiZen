@@ -15,6 +15,9 @@ interface Resource {
 
 const CATEGORIES = ['Tous', 'Stress', 'Anxiété', 'Dépression', 'Bien-être', 'Relations', 'Autre'];
 
+const normalize = (str: string) =>
+    (str ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+
 const categoryColors: Record<string, string> = {
     Stress: '#fca5a5',
     Anxiété: '#fdba74',
@@ -45,9 +48,7 @@ export default function DocumentsScreen() {
     useEffect(() => {
         let result = resources;
         if (activeCategory !== 'Tous') {
-            result = result.filter(r =>
-                r.category?.toLowerCase().trim() === activeCategory.toLowerCase().trim()
-            );
+            result = result.filter(r => normalize(r.category) === normalize(activeCategory));
         }
         if (search.trim()) {
             const q = search.toLowerCase();
@@ -94,6 +95,7 @@ export default function DocumentsScreen() {
 
             {/* Liste */}
             <FlatList
+                style={{ flex: 1 }}
                 data={filtered}
                 keyExtractor={item => String(item.id)}
                 contentContainerStyle={styles.list}
@@ -149,7 +151,7 @@ const styles = StyleSheet.create({
         borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10,
         borderWidth: 1, borderColor: '#ccfbf1', fontSize: 15,
     },
-    categoryBar: { paddingLeft: 20, marginBottom: 12, flexGrow: 0 },
+    categoryBar: { paddingLeft: 20, marginBottom: 12, flexGrow: 0, flexShrink: 0, height: 42 },
     catChip: {
         paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, marginRight: 8,
         backgroundColor: '#fff', borderWidth: 1, borderColor: '#ccfbf1',

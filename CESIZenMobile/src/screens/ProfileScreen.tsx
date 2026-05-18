@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
     View, Text, TouchableOpacity, StyleSheet, ScrollView,
-    ActivityIndicator, Alert,
+    ActivityIndicator, Alert, TextInput, Modal,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { AuthUser } from '../services/authService';
@@ -28,6 +28,28 @@ const levelColor = (level: string) => {
 export default function ProfileScreen({ user, onLogout }: Props) {
     const [history, setHistory] = useState<StressResult[]>([]);
     const [loading, setLoading] = useState(true);
+
+    // Changement de mot de passe
+    const [showPwdModal, setShowPwdModal] = useState(false);
+    const [currentPwd, setCurrentPwd] = useState('');
+    const [newPwd, setNewPwd] = useState('');
+    const [pwdMsg, setPwdMsg] = useState<{ ok: boolean; text: string } | null>(null);
+    const [pwdLoading, setPwdLoading] = useState(false);
+
+    const handleChangePassword = async () => {
+        if (!currentPwd || !newPwd) { setPwdMsg({ ok: false, text: 'Remplissez les deux champs.' }); return; }
+        if (newPwd.length < 6) { setPwdMsg({ ok: false, text: 'Minimum 6 caractères.' }); return; }
+        setPwdLoading(true);
+        try {
+            await api.put('/Users/change-password', { currentPassword: currentPwd, newPassword: newPwd });
+            setPwdMsg({ ok: true, text: 'Mot de passe modifié !' });
+            setCurrentPwd(''); setNewPwd('');
+        } catch {
+            setPwdMsg({ ok: false, text: 'Mot de passe actuel incorrect.' });
+        } finally {
+            setPwdLoading(false);
+        }
+    };
 
     useFocusEffect(
         useCallback(() => {
@@ -95,9 +117,54 @@ export default function ProfileScreen({ user, onLogout }: Props) {
                 </ScrollView>
             )}
 
+            <TouchableOpacity style={styles.pwdButton} onPress={() => { setShowPwdModal(true); setPwdMsg(null); }}>
+                <Text style={styles.pwdButtonText}>🔑  Changer mon mot de passe</Text>
+            </TouchableOpacity>
+
             <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
                 <Text style={styles.logoutText}>Se déconnecter</Text>
             </TouchableOpacity>
+
+            {/* Modal changement de mot de passe */}
+            <Modal visible={showPwdModal} animationType="slide" transparent onRequestClose={() => setShowPwdModal(false)}>
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalBox}>
+                        <Text style={styles.modalTitle}>Changer le mot de passe</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Mot de passe actuel"
+                            secureTextEntry
+                            value={currentPwd}
+                            onChangeText={setCurrentPwd}
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Nouveau mot de passe (6 min.)"
+                            secureTextEntry
+                            value={newPwd}
+                            onChangeText={setNewPwd}
+                        />
+                        {pwdMsg && (
+                            <Text style={[styles.pwdMsg, { color: pwdMsg.ok ? '#16a34a' : '#dc2626' }]}>
+                                {pwdMsg.text}
+                            </Text>
+                        )}
+                        <TouchableOpacity
+                            style={styles.submitButton}
+                            onPress={handleChangePassword}
+                            disabled={pwdLoading}
+                        >
+                            {pwdLoading
+                                ? <ActivityIndicator color="#fff" />
+                                : <Text style={styles.submitText}>Modifier</Text>
+                            }
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => setShowPwdModal(false)} style={styles.cancelButton}>
+                            <Text style={styles.cancelText}>Annuler</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </ScrollView>
     );
 }
@@ -130,9 +197,28 @@ const styles = StyleSheet.create({
     resultScore: { fontSize: 20, fontWeight: 'bold', color: '#1f2937' },
     resultLevel: { fontSize: 15, fontWeight: '700' },
     resultDate: { fontSize: 12, color: '#9ca3af', marginTop: 4 },
+    pwdButton: {
+        backgroundColor: '#f0fdfa', borderRadius: 16, padding: 16,
+        alignItems: 'center', marginTop: 12,
+        borderWidth: 1, borderColor: '#ccfbf1',
+    },
+    pwdButtonText: { color: '#0d9488', fontWeight: '700', fontSize: 15 },
     logoutButton: {
         backgroundColor: '#fee2e2', borderRadius: 16, padding: 16,
-        alignItems: 'center', marginTop: 24,
+        alignItems: 'center', marginTop: 12,
     },
     logoutText: { color: '#dc2626', fontWeight: '700', fontSize: 16 },
+    // Modal
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: 24 },
+    modalBox: { backgroundColor: '#fff', borderRadius: 20, padding: 24 },
+    modalTitle: { fontSize: 18, fontWeight: '700', color: '#0d9488', marginBottom: 16 },
+    input: {
+        borderWidth: 1, borderColor: '#ccfbf1', borderRadius: 12,
+        paddingHorizontal: 14, paddingVertical: 10, marginBottom: 12, fontSize: 15,
+    },
+    pwdMsg: { fontSize: 13, marginBottom: 8, fontWeight: '600' },
+    submitButton: { backgroundColor: '#0d9488', borderRadius: 12, padding: 14, alignItems: 'center', marginBottom: 8 },
+    submitText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+    cancelButton: { alignItems: 'center', padding: 10 },
+    cancelText: { color: '#6b7280', fontSize: 14 },
 });
