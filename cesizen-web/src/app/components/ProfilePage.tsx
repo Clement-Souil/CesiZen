@@ -55,7 +55,6 @@ export function ProfilePage({ userEmail, onLogout }: ProfilePageProps) {
 
                     <div className="space-y-4">
                         {isLoading ? (
-                            // Feedback visuel pendant le chargement (Critère 20)
                             <div className="flex flex-col items-center py-8 text-teal-600">
                                 <Loader2 className="w-8 h-8 animate-spin mb-2" />
                                 <p className="text-sm">Chargement de vos résultats...</p>
@@ -65,21 +64,25 @@ export function ProfilePage({ userEmail, onLogout }: ProfilePageProps) {
                                 Aucun test réalisé pour le moment.
                             </p>
                         ) : (
-                            // On affiche les vraies données reçues de l'API
-                            history.map((act) => (
-                                <div key={act.id} className="flex justify-between items-center p-3 bg-teal-50 rounded-xl border border-teal-100/50">
-                                    <div className="flex items-center gap-2">
-                                        <Calendar className="w-4 h-4 text-teal-600" />
-                                        <span className="text-sm">
-                                            {new Date(act.createdAt).toLocaleDateString('fr-FR')}
-                                        </span>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="font-bold text-teal-900">{act.score} pts</p>
-                                        <p className="text-xs text-teal-600 font-medium">{act.level}</p>
-                                    </div>
-                                </div>
-                            ))
+                            <div className="overflow-y-auto max-h-64 space-y-3 pr-1">
+                                {[...history]
+                                    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                                    .map((act) => (
+                                        <div key={act.id} className="flex justify-between items-center p-3 bg-teal-50 rounded-xl border border-teal-100/50">
+                                            <div className="flex items-center gap-2">
+                                                <Calendar className="w-4 h-4 text-teal-600" />
+                                                <span className="text-sm">
+                                                    {new Date(act.createdAt).toLocaleDateString('fr-FR')}
+                                                </span>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="font-bold text-teal-900">{act.score} pts</p>
+                                                <p className="text-xs text-teal-600 font-medium">{act.level}</p>
+                                            </div>
+                                        </div>
+                                    ))
+                                }
+                            </div>
                         )}
                     </div>
                 </div>
