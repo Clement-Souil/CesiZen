@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
     View, Text, TouchableOpacity, StyleSheet, ScrollView,
     ActivityIndicator, Alert,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { AuthUser } from '../services/authService';
 import api from '../services/api';
 
@@ -28,12 +29,15 @@ export default function ProfileScreen({ user, onLogout }: Props) {
     const [history, setHistory] = useState<StressResult[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        api.get('/StressResults/history')
-            .then(res => setHistory(res.data))
-            .catch(() => setHistory([]))
-            .finally(() => setLoading(false));
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            setLoading(true);
+            api.get('/StressResults/history')
+                .then(res => setHistory(res.data))
+                .catch(() => setHistory([]))
+                .finally(() => setLoading(false));
+        }, [])
+    );
 
     const handleLogout = () => {
         Alert.alert('Déconnexion', 'Êtes-vous sûr de vouloir vous déconnecter ?', [
@@ -65,21 +69,30 @@ export default function ProfileScreen({ user, onLogout }: Props) {
                     <Text style={styles.emptyHint}>Faites votre premier test de stress !</Text>
                 </View>
             ) : (
-                history.map(result => (
-                    <View key={result.id} style={styles.resultCard}>
-                        <View style={styles.resultRow}>
-                            <Text style={styles.resultScore}>{result.score} pts</Text>
-                            <Text style={[styles.resultLevel, { color: levelColor(result.level) }]}>
-                                {result.level}
-                            </Text>
-                        </View>
-                        <Text style={styles.resultDate}>
-                            {new Date(result.createdAt).toLocaleDateString('fr-FR', {
-                                day: 'numeric', month: 'long', year: 'numeric'
-                            })}
-                        </Text>
-                    </View>
-                ))
+                <ScrollView
+                    style={styles.historyScroll}
+                    nestedScrollEnabled={true}
+                    showsVerticalScrollIndicator={true}
+                >
+                    {[...history]
+                        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                        .map(result => (
+                            <View key={result.id} style={styles.resultCard}>
+                                <View style={styles.resultRow}>
+                                    <Text style={styles.resultScore}>{result.score} pts</Text>
+                                    <Text style={[styles.resultLevel, { color: levelColor(result.level) }]}>
+                                        {result.level}
+                                    </Text>
+                                </View>
+                                <Text style={styles.resultDate}>
+                                    {new Date(result.createdAt).toLocaleDateString('fr-FR', {
+                                        day: 'numeric', month: 'long', year: 'numeric'
+                                    })}
+                                </Text>
+                            </View>
+                        ))
+                    }
+                </ScrollView>
             )}
 
             <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
@@ -106,6 +119,9 @@ const styles = StyleSheet.create({
     },
     emptyText: { fontSize: 15, color: '#6b7280', marginBottom: 4 },
     emptyHint: { fontSize: 13, color: '#0d9488' },
+    historyScroll: {
+        maxHeight: 270, // ~3 cartes visibles
+    },
     resultCard: {
         backgroundColor: '#fff', borderRadius: 16, padding: 16,
         borderWidth: 1, borderColor: '#ccfbf1', marginBottom: 10,

@@ -45,7 +45,9 @@ export default function DocumentsScreen() {
     useEffect(() => {
         let result = resources;
         if (activeCategory !== 'Tous') {
-            result = result.filter(r => r.category === activeCategory);
+            result = result.filter(r =>
+                r.category?.toLowerCase().trim() === activeCategory.toLowerCase().trim()
+            );
         }
         if (search.trim()) {
             const q = search.toLowerCase();
