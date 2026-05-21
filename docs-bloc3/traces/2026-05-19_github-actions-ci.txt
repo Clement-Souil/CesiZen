@@ -1,0 +1,43 @@
+ACTION : Mise en place du pipeline CI avec GitHub Actions
+DATE : 2026-05-19
+
+=== CE QU'ON FAIT ===
+Création d'un fichier .github/workflows/ci.yml dans le repo CESIZen.
+Ce fichier définit un pipeline d'intégration continue (CI) qui s'exécute
+automatiquement sur GitHub à chaque push ou pull request.
+
+=== POURQUOI ON LE FAIT ===
+La grille Bloc 3 exige :
+- Un outil d'automatisation configuré (+2 pts sur l'environnement de déploiement)
+- Un outil de versioning configuré (+2 pts)
+GitHub Actions répond aux deux en même temps car il est natif à GitHub.
+
+Le pipeline va :
+1. Restaurer les dépendances .NET (dotnet restore)
+2. Compiler le projet (dotnet build)
+3. Lancer les tests unitaires (dotnet test)
+
+Si une étape échoue, le pipeline bloque et affiche une erreur visible sur GitHub.
+
+=== POURQUOI MAINTENANT ===
+C'est le point de départ logique du Bloc 3 :
+- On prouve qu'on a un versioning structuré (GitHub avec branches)
+- On prouve qu'on a une automatisation en place (CI qui tourne à chaque push)
+- Tout ce qu'on fera ensuite (déploiement, sécurité) s'appuiera sur ce pipeline
+
+=== QUELLE UTILITÉ ===
+- Garantit que le code compile toujours avant d'être mergé
+- Garantit que les tests passent à chaque modification
+- Visible directement sur GitHub (badge vert/rouge sur le repo)
+- Sert de preuve concrète pour la démonstration en soutenance
+
+=== POURQUOI C'EST COHÉRENT ===
+GitHub Actions est natif au repo déjà existant — aucune migration, aucun
+compte supplémentaire. C'est la solution la plus simple, la plus standard,
+et la plus démontrable pour un projet CDA solo.
+
+=== FICHIERS CRÉÉS/MODIFIÉS ===
+- .github/workflows/ci.yml (nouveau)
+
+=== BRANCHE ===
+chore/github-actions-ci (à créer depuis main)
