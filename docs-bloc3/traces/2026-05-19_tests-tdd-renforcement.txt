@@ -1,0 +1,45 @@
+ACTION : Renforcement de la suite de tests xUnit avec approche TDD
+DATE : 2026-05-19
+
+=== CE QU'ON FAIT ===
+Ajout de tests unitaires complets sur les modèles critiques de CESIZen.
+Approche TDD : test écrit avant (ou en parallèle du) code.
+Couverture des cas nominaux, cas limites, et cas d'erreur.
+
+=== CE QUI EXISTE DÉJÀ ===
+2 tests sur StressResults :
+- StressResult_ShouldSetDefaultDate
+- StressResult_ShouldHandleNullUserEmail
+
+=== CE QU'ON AJOUTE ===
+StressResults :
+- Score = 0 (cas limite bas)
+- Score = 149 (juste sous Faible/Modéré)
+- Score = 150 (seuil exact Faible)
+- Score = 299 (juste sous Modéré/Élevé)
+- Score = 300 (seuil exact Élevé)
+- Score négatif (cas invalide)
+- Level null / vide
+
+StressEvent :
+- Création valide
+- Event vide / null
+- Value = 0 / négative
+
+User (modèle) :
+- Rôle USER par défaut
+- IsActive true par défaut
+- Email null
+
+=== POURQUOI MAINTENANT ===
+La règle TDD est désormais inscrite dans CLAUDE.md.
+Avant d'ajouter de nouvelles fonctionnalités Bloc 3, on renforce
+la base de tests existante pour avoir un filet de sécurité solide.
+Le pipeline CI garantit que ces tests tournent à chaque push.
+
+=== UTILITÉ POUR LE DOSSIER ===
+Prouve la démarche qualité : couverture des cas nominaux ET d'erreur.
+Valorisable dans le plan de sécurisation (tests = bonne pratique de dev).
+
+=== BRANCHE ===
+test/renforcement-suite-xunit (depuis develop)
