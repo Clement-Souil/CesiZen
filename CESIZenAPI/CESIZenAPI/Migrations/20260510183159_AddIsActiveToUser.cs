@@ -9,10 +9,10 @@ namespace CESIZenAPI.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // Ajout conditionnel de la colonne IsActive
+            // Add IsActive column to Users
             migrationBuilder.Sql(@"
                 ALTER TABLE `Users`
-                ADD COLUMN IF NOT EXISTS `IsActive` tinyint(1) NOT NULL DEFAULT TRUE;
+                ADD COLUMN `IsActive` tinyint(1) NOT NULL DEFAULT TRUE;
             ");
 
             // Ajout conditionnel de la contrainte unique sur Email
