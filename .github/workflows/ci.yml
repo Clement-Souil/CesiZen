@@ -74,7 +74,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.28.0
         with:
           scan-type: 'fs'
           scan-ref: 'CESIZenAPI/CESIZenAPI'
@@ -110,7 +110,7 @@ jobs:
           dotnet sonarscanner begin \
             /k:"Clement-Souil_CesiZen" \
             /o:"clement-souil86" \
-            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
+            /d:sonar.token="$SONAR_TOKEN" \
             /d:sonar.host.url="https://sonarcloud.io"
           dotnet build CESIZenAPI/CESIZenAPI/CESIZenAPI.csproj --configuration Release
-          dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+          dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
