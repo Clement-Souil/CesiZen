@@ -53,7 +53,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: cesizen-web
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Lint
         working-directory: cesizen-web
