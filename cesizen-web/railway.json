@@ -1,8 +1,5 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
-  "build": {
-    "buildCommand": "rm -rf node_modules/.vite && npm ci --ignore-scripts && npm run build"
-  },
   "deploy": {
     "startCommand": "npx serve dist --listen 0.0.0.0:$PORT --single",
     "restartPolicyType": "ON_FAILURE"
