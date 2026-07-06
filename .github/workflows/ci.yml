@@ -32,6 +32,8 @@ jobs:
 
       - name: Run unit tests
         run: dotnet test CESIZenAPI/CESIZenAPI.Tests/CESIZenAPI.Tests.csproj --no-restore --configuration Release --verbosity normal
+        env:
+          Jwt__Key: ${{ secrets.JWT_KEY }}
 
   # ── React Web ──────────────────────────────────────────────────────────────
   web:
