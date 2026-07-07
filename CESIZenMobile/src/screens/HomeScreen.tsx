@@ -34,12 +34,6 @@ export default function HomeScreen() {
                     </View>
                 </TouchableOpacity>
             ))}
-
-            <View style={styles.infoBox}>
-                <Text style={styles.infoText}>
-                    💡 Utilisez la barre de navigation en bas pour accéder à toutes les fonctionnalités.
-                </Text>
-            </View>
         </ScrollView>
     );
 }

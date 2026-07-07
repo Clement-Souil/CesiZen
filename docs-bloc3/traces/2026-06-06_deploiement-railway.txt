@@ -1,0 +1,42 @@
+ACTION : Déploiement de l'API CESIZen sur Railway
+DATE : 2026-06-06
+
+=== CE QU'ON A FAIT ===
+Déploiement complet de l'API .NET 9 CESIZen sur Railway (cloud PaaS).
+URL de production : https://cesizen-production-7dc4.up.railway.app
+
+=== STACK DÉPLOYÉE ===
+- API : .NET 9 ASP.NET Core → Railway App Service (US West)
+- BDD : MySQL 8 → Railway MySQL Service
+- Réseau interne : mysql.railway.internal:3306
+
+=== VARIABLES D'ENVIRONNEMENT CONFIGURÉES ===
+- ASPNETCORE_ENVIRONMENT=Production
+- ASPNETCORE_URLS=http://0.0.0.0:$PORT
+- ConnectionStrings__DefaultConnection → mysql.railway.internal
+- Jwt__Key, Jwt__Issuer, Jwt__Audience
+
+=== PROBLÈMES RENCONTRÉS ET RÉSOLUS ===
+1. Azure for Students → policy violation sur MySQL Flexible Server
+   → Solution : migration vers Railway (plus adapté au contexte étudiant)
+
+2. Railpack ne détectait pas le projet .NET
+   → Solution : Root Directory configuré à CESIZenAPI/CESIZenAPI
+
+3. Tables inexistantes au démarrage
+   → Solution : ajout de db.Database.Migrate() avant le seed dans Program.cs
+
+4. Migration ADD COLUMN IF NOT EXISTS non supportée par MySQL Railway
+   → Solution : suppression du IF NOT EXISTS (base vierge, colonne absente garantie)
+
+=== RÉSULTAT FINAL ===
+- GET /api/Resources → 200 OK (liste vide)
+- GET /api/StressEvents → 200 OK (43 événements Holmes & Rahe seedés)
+- Migrations appliquées automatiquement au démarrage
+- Auto-deploy activé sur push vers develop
+
+=== UTILITÉ POUR LE DOSSIER ===
+Couvre directement le critère :
+"Mise en place des environnements de déploiement" (+2 pts)
+"Plan de déploiement - cohérence avec le projet" (+1 pt)
+Démontre un environnement réellement déployé avec automatisation CI/CD.

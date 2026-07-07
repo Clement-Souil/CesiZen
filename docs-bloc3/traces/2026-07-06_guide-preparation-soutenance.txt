@@ -1,0 +1,29 @@
+DATE : 2026-07-06
+ACTION : Rédaction du guide complet de préparation à la soutenance Bloc 3
+
+FICHIER : docs-bloc3/Guide_Preparation_Soutenance.docx
+
+CE QU'ON A FAIT :
+- Guide exhaustif en 6 chapitres pour préparer la soutenance Bloc 3
+- Chapitre 1 : Comment lancer le projet en local (prérequis, API, Web, Mobile, checklist)
+- Chapitre 2 : Comment vérifier l'environnement de production (Railway, logs, rollback, GitHub Actions, SonarCloud)
+- Chapitre 3 : Script de démonstration étape par étape (7 étapes avec ce que dire)
+- Chapitre 4 : Concepts clés (JWT, RBAC, CORS, Supply Chain, Trivy, SonarCloud, EF Core, OWASP, RGPD, ports)
+- Chapitre 5 : Questions probables et réponses préparées (déploiement, sécurité, CI/CD, RGPD)
+- Chapitre 6 : Aide-mémoire avec tous les chiffres clés (43 événements, seuils, RTO/RPO, ports...)
+
+POURQUOI CE DOCUMENT :
+Besoin identifié : Clément avait oublié comment lancer le projet et souhaitait maîtriser
+les concepts pour répondre aux questions du jury sur la sécurité. Ce guide centralise
+tout ce qui est nécessaire pour une démonstration et une soutenance réussies.
+
+UTILITÉ POUR LA SOUTENANCE :
+- Aide-mémoire complet à consulter la veille
+- Script de démo utilisable directement pendant la soutenance
+- Réponses préparées aux questions les plus probables
+- Chiffres clés à retenir sans hésitation
+
+COHÉRENCE AVEC LE PROJET :
+Synthétise l'ensemble du travail Bloc 3 effectué depuis mai 2026 :
+déploiement Railway, CI/CD GitHub Actions, SonarCloud, analyse OWASP, RGPD,
+plan de gestion de crise, veille technologique.

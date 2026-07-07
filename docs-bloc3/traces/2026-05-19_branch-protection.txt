@@ -1,0 +1,36 @@
+ACTION : Protection des branches master et develop sur GitHub
+DATE : 2026-05-19
+
+=== CE QU'ON FAIT ===
+Configuration des règles de protection sur les branches master et develop
+via l'API GitHub (GitHub CLI).
+
+=== RÈGLES APPLIQUÉES ===
+master :
+- Push direct interdit (passage obligatoire par PR)
+- La PR doit avoir au moins 1 approbation
+- Le pipeline CI doit passer au vert avant de merger
+- Pas de force push autorisé
+
+develop :
+- Push direct interdit
+- Le pipeline CI doit passer au vert avant de merger
+
+=== POURQUOI ON LE FAIT ===
+Sans protection, n'importe qui (ou une erreur de manip) peut pousser
+directement sur master et casser la production.
+La protection force un workflow propre : branche → PR → CI vert → merge.
+
+=== POURQUOI MAINTENANT ===
+Le pipeline CI est en place (merge effectué).
+Il faut protéger les branches maintenant pour que la règle CI soit
+obligatoire dès le prochain push — sinon la protection n'a aucun sens.
+
+=== UTILITÉ POUR LE DOSSIER ===
+Prouve le versioning structuré et les bonnes pratiques de développement.
+Deux critères de la grille Bloc 3 directement couverts :
+- "Outil de versioning pertinent configuré" (+2 pts)
+- "Mise en œuvre de bonnes pratiques de développement" (+1 pt)
+
+=== BRANCHE ===
+Opération GitHub API — pas de branche nécessaire.

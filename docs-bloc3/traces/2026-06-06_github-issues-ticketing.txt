@@ -1,0 +1,39 @@
+ACTION : Configuration de l'outil de ticketing GitHub Issues
+DATE : 2026-06-06
+
+=== CE QU'ON A FAIT ===
+Configuration complète de GitHub Issues comme outil de gestion
+des évolutions et anomalies du projet CESIZen.
+
+=== LABELS CRÉÉS ===
+- bug (#d73a4a) : Anomalie à corriger
+- enhancement (#a2eeef) : Nouvelle fonctionnalité
+- security (#e4e669) : Vulnérabilité ou risque sécurité
+- documentation (#0075ca) : Mise à jour documentation
+- maintenance (#cfd3d7) : Tâche de maintenance
+- critical (#b60205) : Priorité critique
+- in-progress (#fbca04) : En cours de traitement
+- done (#0e8a16) : Terminé
+
+=== MILESTONES CRÉÉES ===
+- v1.0 - Production (30/06/2026) : Déploiement initial
+- v1.1 - Sécurisation (31/07/2026) : Corrections sécurité et RGPD
+- v1.2 - Évolutions (31/08/2026) : Nouvelles fonctionnalités
+
+=== ISSUES CRÉÉES ===
+1. [BUG] Reset mot de passe par email non implémenté
+   → Labels : bug, enhancement | Milestone : v1.1
+2. [SECURITY] Seuils de stress codés en dur
+   → Labels : security, enhancement | Milestone : v1.1
+3. [MAINTENANCE] Ajouter tests de charge JMeter
+   → Labels : maintenance | Milestone : v1.2
+
+=== POURQUOI CET OUTIL ===
+GitHub Issues est natif au repo CESIZen — pas d'outil supplémentaire,
+workflow intégré avec les branches et les PRs.
+Un ticket peut être fermé automatiquement via "Closes #N" dans un commit.
+
+=== UTILITÉ POUR LE DOSSIER ===
+Couvre directement :
+- "Outil de gestion des évolutions et ticketing présenté et configuré" (+3 pts)
+- "Organisation et méthodologie pour gérer les tickets" (+3 pts)

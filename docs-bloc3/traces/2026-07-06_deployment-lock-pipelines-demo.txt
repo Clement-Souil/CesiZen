@@ -1,0 +1,51 @@
+DATE : 2026-07-06
+ACTION : Verrouillage des déploiements + 3 pipelines de démo CI/CD
+
+BRANCHES CRÉÉES :
+- feature/deployment-lock  → PR #18 : pipeline complet avec gate de déploiement
+- demo/pipeline-ok         → PR #15 : tous les jobs passent (cas nominal)
+- demo/pipeline-fail-tests → PR #16 : échec du job API (test unitaire cassé)
+- demo/pipeline-fail-security → PR #17 : échec du job Security (CVE + supply chain)
+
+CE QU'ON A FAIT :
+
+1. VERROUILLAGE DES DÉPLOIEMENTS (feature/deployment-lock)
+   - Ajout du job "deploy" dans ci.yml avec environment: production
+   - Ce job nécessite l'approbation manuelle d'un reviewer GitHub avant de passer
+   - Il ne s'exécute que sur push vers master (pas sur les PRs)
+   - Dépend des 4 jobs CI : api, web, security, sonar (tous doivent être verts)
+   - Configuration GitHub requise : Settings → Environments → production → Required reviewers
+
+2. PIPELINE OK (demo/pipeline-ok)
+   - Démontre le cas nominal : code valide, tests verts, sécurité propre
+   - 5 jobs : API ✓, Web ✓, Security ✓, SonarCloud ✓, Deploy (attente approbation)
+   - Trivy épinglé sur SHA, npm ci --ignore-scripts, secrets via env block
+
+3. PIPELINE FAIL TESTS (demo/pipeline-fail-tests)
+   - Test StressResult_Score149_ShouldBeLowRisk échoue (seuil 100 au lieu de 150)
+   - Message d'erreur explicite dans le log du job
+   - Les jobs Security et SonarCloud ne s'exécutent pas (dépendent de api)
+   - Démontre la protection par tests unitaires contre les régressions
+
+4. PIPELINE FAIL SECURITY (demo/pipeline-fail-security)
+   - Trivy utilise @master (tag mutable) au lieu du SHA complet
+   - exit-code: '1' → le job échoue si CVE CRITICAL/HIGH détecté
+   - SonarCloud signale le tag mutable comme vulnérabilité HIGH
+   - Démontre la défense en profondeur : deux outils détectent deux problèmes distincts
+
+POURQUOI CES 3 PIPELINES :
+Le prof demande explicitement de démontrer des pipelines qui passent et qui échouent
+pour des raisons différentes. Cela prouve que le CI n'est pas un décor mais un vrai
+garde-fou qui empêche du code ou de la configuration incorrecte d'atteindre la production.
+
+COHÉRENCE AVEC LE PROJET :
+- Bloc 3 critère "1 environnement configuré avec automatisations" : gate de déploiement
+- Bloc 3 critère "Actions correctives et préventives OWASP" : Trivy bloquant
+- Bloc 3 critère "Bonnes pratiques de développement" : TDD démontré par le test cassé
+- Bloc 3 critère "Analyse des vulnérabilités" : SonarCloud intégré au flux de développement
+
+PROCHAINES ÉTAPES :
+1. Configurer l'environnement "production" dans GitHub Settings
+   (Settings → Environments → New environment → "production" → Required reviewers)
+2. Mettre à jour le dossier technique avec cette section
+3. Documenter le SIEM (monitoring Railway + alertes)
