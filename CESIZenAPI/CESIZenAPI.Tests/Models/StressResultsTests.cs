@@ -36,9 +36,10 @@ namespace CESIZenAPI.Tests
         [Fact]
         public void StressResult_ScoreBelow150_ShouldBeLowStress()
         {
+            // BUG INTRODUCED (demo Bloc 3) : mauvais seuil utilise (100 au lieu de 150)
             var result = new StressResults { Score = 149, Level = "Faible" };
 
-            Assert.Equal(149, result.Score);
+            Assert.True(result.Score < 100, $"Expected low risk (score < 150) but threshold is wrong. Score: {result.Score}");
             Assert.Equal("Faible", result.Level);
         }
 
