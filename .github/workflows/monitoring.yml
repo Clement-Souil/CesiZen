@@ -1,0 +1,106 @@
+name: Monitoring — API Health Check
+
+on:
+  schedule:
+    # Every 15 minutes — "ne pas lâcher les applicatifs"
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+    # Allow manual trigger from GitHub Actions UI
+
+jobs:
+  health-check:
+    name: API — Health Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping API — StressEvents endpoint
+        id: ping
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            --max-time 15 \
+            "https://cesizen-production-7dc4.up.railway.app/api/StressEvents")
+          echo "status=$HTTP_STATUS" >> $GITHUB_OUTPUT
+          echo "HTTP status: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "ALERT: API returned $HTTP_STATUS — expected 200"
+            exit 1
+          fi
+
+      - name: Create GitHub Issue on failure
+        if: failure()
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'incident,monitoring',
+              state: 'open'
+            });
+
+            // Avoid duplicate alerts — only create if no open incident exists
+            if (issues.length === 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: '🚨 [INCIDENT] API CESIZen inaccessible',
+                labels: ['incident', 'monitoring', 'priority: high'],
+                body: [
+                  '## Incident détecté automatiquement',
+                  '',
+                  '**Date** : ' + new Date().toISOString(),
+                  '**Endpoint** : https://cesizen-production-7dc4.up.railway.app/api/StressEvents',
+                  '**Statut HTTP** : ' + '${{ steps.ping.outputs.status }}',
+                  '',
+                  '## Actions immédiates',
+                  '',
+                  '- [ ] Vérifier les logs Railway → [Dashboard Railway](https://railway.app)',
+                  '- [ ] Vérifier le statut du service API sur Railway',
+                  '- [ ] Vérifier le statut de la base de données MySQL',
+                  '- [ ] Si nécessaire : effectuer un rollback vers le dernier déploiement stable',
+                  '',
+                  '## Procédure de rollback',
+                  '',
+                  '1. Railway Dashboard → service `cesizen-api`',
+                  '2. Onglet "Deployments" → cliquer sur le dernier déploiement stable',
+                  '3. Bouton "Redeploy" → confirmer',
+                  '4. Attendre 2-3 minutes → vérifier que ce workflow repasse au vert',
+                  '',
+                  '---',
+                  '_Alerte générée automatiquement par le workflow monitoring.yml_'
+                ].join('\n')
+              });
+              console.log('Incident issue created.');
+            } else {
+              console.log('Incident already tracked in issue #' + issues[0].number);
+            }
+
+      - name: Close resolved incident if API is back
+        if: success()
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'incident,monitoring',
+              state: 'open'
+            });
+
+            for (const issue of issues) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: '✅ **Incident résolu** — API répond normalement (HTTP 200) à ' + new Date().toISOString()
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                state: 'closed'
+              });
+              console.log('Incident issue #' + issue.number + ' closed.');
+            }

@@ -1,0 +1,29 @@
+DATE : 2026-06-20
+ACTION : Redaction de l'analyse de securite OWASP Top 10 appliquee a CESIZen
+FICHIER : docs-bloc3/Analyse_OWASP_CESIZen.docx
+
+CE QU'ON A FAIT :
+- Analyse des 10 vulnerabilites OWASP Top 10 (2021) appliquee specifiquement a CESIZen
+- Calcul de criticite : Probabilite x Impact (echelle 1-3 chacun, score 1-9)
+- Tableau de synthese avec code couleur (Faible/Modere/Eleve)
+- Analyse detaillee pour chaque vulnerabilite : contexte CESIZen + actions correctives
+- Plan d'action correctif priorise (Haute/Moyenne/Basse)
+
+RESULTATS PAR VULNERABILITE :
+- A01 Broken Access Control    : Score 6 (Eleve)   - Couvert (JWT RBAC)
+- A02 Cryptographic Failures   : Score 3 (Modere)  - Couvert (JWT secret externalise, HTTPS Railway)
+- A03 Injection                : Score 3 (Modere)  - Couvert (EF Core ORM, requetes parametrees)
+- A04 Insecure Design          : Score 4 (Modere)  - Partiel (pas de reset mdp email, pas de rate limiting)
+- A05 Security Misconfiguration: Score 4 (Modere)  - Partiel (CORS trop permissif, signale SonarCloud)
+- A06 Vulnerable Components    : Score 3 (Modere)  - Couvert (Trivy dans CI/CD)
+- A07 Auth Failures            : Score 6 (Eleve)   - Partiel (pas de bruteforce protection, pas de MFA)
+- A08 Data Integrity Failures  : Score 3 (Modere)  - Couvert (SHA pinning, --ignore-scripts)
+- A09 Logging & Monitoring     : Score 4 (Modere)  - Partiel (logs Railway basiques, pas d'alertes)
+- A10 SSRF                     : Score 1 (Faible)  - Non applicable (aucune requete externe)
+
+TAUX DE COUVERTURE : 90% (9/10 traites, dont 5 couverts, 4 partiels)
+Seuil requis : 75% → critere 3/3 pts atteint.
+
+COHERENCE AVEC LE PROJET :
+Ce document constitue la base du critere "Analyse des vulnerabilites et risques avec calcul
+de criticite" (3 pts) et "Actions correctives et preventives" (3 pts) de la grille Bloc 3.

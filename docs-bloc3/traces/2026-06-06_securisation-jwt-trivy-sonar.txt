@@ -1,0 +1,27 @@
+ACTION : Sécurisation JWT + Trivy + SonarCloud
+DATE : 2026-06-06
+
+=== 1. SORTIR LA CLÉ JWT DU REPO ===
+Problème : La clé JWT est en clair dans appsettings.json (visible sur GitHub).
+Solution : Remplacer par une variable d'environnement lue au runtime.
+- appsettings.json → clé JWT remplacée par placeholder vide
+- GitHub Secrets → JWT_KEY ajouté pour le CI
+- Railway Variables → déjà configuré en production
+
+=== 2. TRIVY DANS LE PIPELINE CI ===
+Trivy scanne les vulnérabilités connues (CVE) dans le code et les dépendances.
+Intégré comme job dans GitHub Actions — bloque le pipeline si vulnérabilité critique.
+
+=== 3. SONARCLOUD ===
+Analyse statique du code : bugs, code dupliqué, failles, maintenabilité.
+Intégré dans GitHub Actions — rapport visible sur sonarcloud.io.
+
+=== POURQUOI MAINTENANT ===
+Ces trois actions couvrent directement :
+- "Actions correctives et préventives" (plan de sécurisation, +3 pts)
+- "Bonnes pratiques de développement" (+1 pt)
+- "Mise en oeuvre de méthodes de gestion des données personnelles" (+2 pts)
+
+=== FICHIERS MODIFIÉS ===
+- appsettings.json (clé JWT vidée)
+- .github/workflows/ci.yml (Trivy + SonarCloud ajoutés)

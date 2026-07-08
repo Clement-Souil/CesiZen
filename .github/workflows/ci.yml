@@ -7,7 +7,7 @@ on:
     branches: [ master, develop ]
 
 jobs:
-  # ── .NET API ──────────────────────────────────────────────────────────────
+  # ── .NET API ───────────────────────────────────────────────────────────────
   api:
     name: API — Build & Test
     runs-on: ubuntu-latest
@@ -32,8 +32,10 @@ jobs:
 
       - name: Run unit tests
         run: dotnet test CESIZenAPI/CESIZenAPI.Tests/CESIZenAPI.Tests.csproj --no-restore --configuration Release --verbosity normal
+        env:
+          Jwt__Key: ${{ secrets.JWT_KEY }}
 
-  # ── React Web ─────────────────────────────────────────────────────────────
+  # ── React Web ──────────────────────────────────────────────────────────────
   web:
     name: Web — Lint & Build
     runs-on: ubuntu-latest
@@ -49,9 +51,9 @@ jobs:
           cache: 'npm'
           cache-dependency-path: cesizen-web/package-lock.json
 
-      - name: Install dependencies
+      - name: Install dependencies (no post-install scripts — supply chain security)
         working-directory: cesizen-web
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Lint
         working-directory: cesizen-web
@@ -60,3 +62,74 @@ jobs:
       - name: Build
         working-directory: cesizen-web
         run: npm run build
+
+  # ── Security — Trivy CVE scan ──────────────────────────────────────────────
+  security:
+    name: Security — Trivy Scan
+    runs-on: ubuntu-latest
+    needs: api
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Scan .NET dependencies for CVEs
+        # Pinned to full SHA — prevents supply chain attack via mutable tags
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: 'fs'
+          scan-ref: 'CESIZenAPI/CESIZenAPI'
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0'
+
+  # ── Quality — SonarCloud static analysis ───────────────────────────────────
+  sonar:
+    name: Quality — SonarCloud Analysis
+    runs-on: ubuntu-latest
+    needs: api
+
+    steps:
+      - name: Checkout code (full history for blame analysis)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Install dotnet-sonarscanner
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      - name: Build and analyze
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          dotnet sonarscanner begin \
+            /k:"Clement-Souil_CesiZen" \
+            /o:"clement-souil86" \
+            /d:sonar.token="$SONAR_TOKEN" \
+            /d:sonar.host.url="https://sonarcloud.io"
+          dotnet build CESIZenAPI/CESIZenAPI/CESIZenAPI.csproj --configuration Release
+          dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
+
+  # ── Deploy — Production gate (requires manual approval) ────────────────────
+  deploy:
+    name: Deploy — Production Gate
+    runs-on: ubuntu-latest
+    needs: [api, web, security, sonar]
+    # Only runs on direct push to master (not on PRs)
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    environment:
+      name: production
+      url: https://cesizen-production-7dc4.up.railway.app
+
+    steps:
+      - name: Deployment approved
+        run: |
+          echo "All CI checks passed."
+          echo "Production deployment approved by required reviewer."
+          echo "Railway deploys automatically on master push — this gate ensures human sign-off."

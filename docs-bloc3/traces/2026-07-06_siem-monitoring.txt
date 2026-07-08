@@ -1,0 +1,39 @@
+DATE : 2026-07-06
+ACTION : Mise en place du monitoring automatique (SIEM) — "ne pas lâcher les applicatifs"
+
+FICHIER : docs-bloc3/Plan_Surveillance_SIEM_CESIZen.docx
+WORKFLOW : .github/workflows/monitoring.yml (dans feature/deployment-lock, PR #18)
+
+CE QU'ON A FAIT :
+
+1. WORKFLOW MONITORING.YML
+   - Cron GitHub Actions : toutes les 15 minutes, 24h/24, 7j/7
+   - Requête HTTP GET sur /api/StressEvents (endpoint le plus représentatif)
+   - Si réponse != 200 : création automatique d'une Issue GitHub
+     Labels : incident, monitoring, priority: high
+     Contenu : horodatage, code HTTP, checklist de vérification, lien Railway
+   - Si API revenue à 200 : fermeture automatique de l'Issue + commentaire "résolu"
+   - Anti-doublon : vérifie qu'aucune Issue ouverte n'existe avant d'en créer une
+
+2. LABELS GITHUB CRÉÉS
+   - "incident" (rouge) — incidents de production
+   - "monitoring" (bleu) — alertes automatiques
+   - "priority: high" (rouge vif) — traitement urgent
+
+3. DOCUMENT SIEM
+   - Définition SIEM et justification (pourquoi c'est obligatoire)
+   - Architecture 3 couches : health check + Railway logs + SonarCloud/CI
+   - Processus de gestion des incidents (5 phases : détection → diagnostic → mitigation → résolution → post-mortem)
+   - Métriques : MTTD < 15 min, MTTR < 2h, uptime > 99.5%
+   - Roadmap SIEM v2.0 : Uptime Robot, Grafana Cloud, alertes sur tentatives de connexion
+
+POURQUOI CE CHOIX TECHNIQUE :
+GitHub Actions est utilisé car il est déjà en place pour la CI. La cron task ne nécessite
+aucun abonnement externe. Les Issues GitHub constituent à la fois le système d'alerte
+et le registre des incidents (tracabilité MTTR).
+
+COHÉRENCE AVEC LE PROJET :
+- Bloc 3 critère "Analyse des vulnérabilités" : monitoring sur les anomalies de comportement
+- Bloc 3 critère "Gestion de crise" : détection automatique + procédure de rollback dans l'Issue
+- Bloc 3 critère "A09 OWASP Logging & Monitoring" : couverture améliorée (partiel → mieux couvert)
+- Réponse directe à la demande prof : "avoir un SIEM, ne pas lâcher les applicatifs"
