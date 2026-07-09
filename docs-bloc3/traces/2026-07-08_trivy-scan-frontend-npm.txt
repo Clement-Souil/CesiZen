@@ -1,0 +1,52 @@
+DATE : 2026-07-08
+ACTION : Extension du scan Trivy aux dépendances npm du frontend (cesizen-web)
+
+CONSTAT :
+Clément a signalé que le projet de référence (Bloc 2 groupe) utilise un
+modèle de défense en profondeur à 4 couches : SAST (SonarCloud), SCA (Snyk,
+dépendances npm à chaque PR), Image (Trivy, CVE de l'image Docker), DAST
+(OWASP ZAP, application déployée). Il pensait devoir intégrer Snyk pour
+combler la couche SCA.
+
+Vérification du ci.yml de CESIZen : Trivy y est utilisé en mode 'fs'
+(filesystem), pas en mode 'image' (pas de Dockerfile, Railway construit le
+conteneur automatiquement). Mais le scan-ref ne couvrait QUE
+CESIZenAPI/CESIZenAPI (backend .NET) — les dépendances npm de cesizen-web
+n'étaient jamais vérifiées pour des CVE connues. C'est exactement le rôle
+que Snyk joue dans le projet de référence, et ce rôle était vide côté
+CESIZen.
+
+CE QU'ON A FAIT :
+Plutôt que d'intégrer Snyk (nouveau compte, nouveau token à créer, risqué à
+J-1), extension du job Security existant : ajout d'un second scan Trivy
+(mode fs, même SHA pinning) ciblant cesizen-web en plus du backend. Comble
+la couche SCA sur le frontend sans ajouter d'outil ni de compte externe.
+
+Flux suivi : branche security/trivy-scan-frontend → PR #22 vers develop
+(tous les checks verts, aucun bypass nécessaire) → PR #23 develop → master
+(tous les checks verts, aucun bypass nécessaire). Premier cycle complet
+depuis la remise en ordre du Git Flow qui passe sans accroc.
+
+RÉSULTAT :
+.github/workflows/ci.yml — job "security" scanne désormais :
+- CESIZenAPI/CESIZenAPI (NuGet, backend)
+- cesizen-web (npm, frontend)
+
+CORRESPONDANCE AVEC LE MODÈLE DE RÉFÉRENCE (4 couches) :
+- SAST → SonarCloud (déjà en place, identique à la référence)
+- SCA → Trivy fs sur backend ET frontend (rôle de Snyk chez CESIZen)
+- Image → non applicable (pas de Dockerfile, Railway abstrait cette couche)
+- DAST → non couvert (OWASP ZAP non mis en place) — limite à assumer,
+  perspective d'évolution si le temps le permet
+
+POURQUOI CE CHOIX (Trivy étendu plutôt que Snyk) :
+Snyk aurait dupliqué une fonction déjà couverte par un outil existant
+(Trivy fait de la SCA aussi bien que du scan de dépendances backend).
+Ajouter un compte/outil supplémentaire à J-1 pour un gain fonctionnel nul
+n'était pas justifié. La vraie lacune (npm jamais scanné) est corrigée avec
+l'outil déjà en place.
+
+COHÉRENCE AVEC LE PROJET :
+- Bloc 3 critère "Actions correctives et préventives" OWASP (/3 pts) —
+  A06 Vulnerable Components désormais couvert sur backend ET frontend
+- Bloc 3 critère "Bonnes pratiques de développement" (/1 pt)

@@ -1,0 +1,61 @@
+DATE : 2026-07-09
+ACTION : Correction d'un bug majeur de rendu + alignement visuel réel sur la référence
+
+CONSTAT (retour de Clément après visualisation) :
+Le résultat de la restructuration précédente ne correspondait toujours pas à
+la référence — cercles trop discrets, mal compris. Pour la première fois de
+la session, un rendu VISUEL réel a été obtenu (PowerPoint installé localement
+via l'automatisation COM pywin32, indisponible jusqu'ici faute de LibreOffice)
+et comparé slide par slide avec le PPTX de référence Bloc 2.
+
+CE QUE LE RENDU RÉEL A RÉVÉLÉ :
+1. Le PPTX de référence utilise des cercles ÉNORMES (40-50% de la largeur de
+   slide), pleinement opaques et saturés, qui débordent largement du cadre
+   et se chevauchent dans les coins — pas de petits accents discrets à 10-20%
+   d'opacité comme précédemment réalisé.
+2. BUG CRITIQUE découvert sur MA propre couverture et ma slide de clôture :
+   un rectangle plein-slide sombre (042F2E) avait été ajouté APRÈS les
+   cercles dans l'ordre des calques (z-order), les recouvrant entièrement et
+   les rendant invisibles — d'où l'aspect plat systématiquement signalé.
+3. BUG CRITIQUE PLUS GRAVE découvert sur 6 slides (les 5 séparateurs de
+   section + la slide de contenu "Démonstration") : le FOND MÊME DE LA SLIDE
+   (propriété <p:bg>, pas une forme) avait été accidentellement recoloré en
+   teal sombre (115E59) lors du tout premier passage de recolorage global de
+   la palette (la regex avait remplacé 1E2761→115E59 partout dans le XML,
+   y compris dans la définition de fond de slide). Résultat : titre et
+   numéro de section (déjà en texte foncé suite à une correction antérieure)
+   devenaient invisibles sur un fond devenu sombre — un bug de contraste
+   caché qui s'est ajouté par-dessus la première correction.
+
+CORRECTIONS APPLIQUÉES :
+1. Renvoi des rectangles de fond plein-slide (042F2E) tout à l'arrière du
+   z-order sur la couverture et la clôture.
+2. Reconstruction de la couverture : 4 grands cercles pleins et saturés
+   débordant des 4 coins (teal/sauge/terracotta/lavande), badge pilule
+   blanc "BLOC 3" repositionné pour ne plus chevaucher le titre.
+3. Reconstruction de la clôture (Merci) : même traitement à 4 cercles.
+4. Correction du fond de slide XML (<p:bg>) sur les 6 slides affectées,
+   remis en sable clair (F5EFE6) — les textes déjà foncés redeviennent
+   lisibles sans autre changement.
+5. Vérification visuelle systématique des 20 slides (export PNG via
+   automatisation PowerPoint/pywin32, méthode de rendu enfin disponible
+   dans cet environnement) — comparaison directe avec la référence.
+6. Correction du texte obsolète "GitHub Actions — 4 jobs automatisés" en
+   "5 jobs" sur la slide de section Pipeline CI/CD.
+
+MÉTHODE DE VÉRIFICATION (nouveau, à réutiliser) :
+python + pywin32 (win32com.client, PowerPoint.Application) permet d'exporter
+chaque slide en PNG réel sans dépendre de LibreOffice (absent de cet
+environnement). C'est la méthode fiable pour toute vérification visuelle
+future sur ce poste.
+
+LEÇON RETENUE :
+Une modification par recherche/remplacement global sur le XML brut d'un
+PPTX (regex sur toutes les valeurs de couleur) peut affecter des éléments
+structurels invisibles dans un audit basé uniquement sur les formes
+(python-pptx shapes) — notamment le fond de slide (<p:bg>), qui n'apparaît
+pas dans une itération sur slide.shapes. Toute vérification de contraste
+future doit inclure une lecture explicite de <p:bg> en plus des formes.
+
+COHÉRENCE AVEC LE PROJET :
+Bloc 3 critère "Support de soutenance visuel et équilibré" (/1 pt).

@@ -1,0 +1,74 @@
+DATE : 2026-07-09
+SUJET : Retouches PPTX Soutenance Bloc 3 — 4 corrections de cohérence avec le dossier technique
+
+=== CE QU'ON A FAIT ===
+
+4 modifications appliquées sur Soutenance_Bloc3_CESIZen.pptx,
+dans le but d'aligner le diaporama avec le contenu du dossier technique.
+
+--- Modification 1 : Slide 9 (CI/CD — SonarCloud) ---
+Avant : "Issues détectées et corrigées" (vague, aucun exemple)
+Après : "4 incidents résolus en production"
+
+Sous-texte mis à jour :
+Avant : "Organisation : clement-souil86"
+Après : "UTF-8 Nixpacks · EBUSY Railway · serve@14 · SonarCloud config"
+
+Pourquoi : Le dossier technique (section 3.2) cite 4 incidents de déploiement réels
+résolus grâce au pipeline. Le diaporama ne mentionnait que l'organisation GitHub sans
+préciser les problèmes concrets résolus. Cette formulation montre une vraie expérience
+du déploiement continu, ce qui est directement évalué dans la grille (critère "automatisations").
+
+--- Modification 2 : Slide 10 (Plan de maintenance — GitHub Issues) ---
+Ajout d'un nouvel item dans la colonne droite (Milestones) :
+"SIEM auto — GET /api/StressEvents (15 min) → Issues GitHub auto"
+
+Pourquoi : Le dossier technique (section 3.3) décrit en détail le monitoring.yml GitHub Actions
+qui surveille l'API toutes les 15 minutes et crée/ferme automatiquement des Issues GitHub.
+Ce mécanisme SIEM (Security Information and Event Management) est une valeur ajoutée
+importante pour le critère "ticketing configuré" (3 pts). Son absence dans le diaporama
+créait une incohérence avec le dossier.
+
+--- Modification 3 : Slide 12 (Plan de sécurisation — OWASP Top 10) ---
+Ajout d'une ligne supplémentaire sous le tableau des 10 catégories OWASP :
+- Vulnérabilité : "STRIDE (complémentaire) — 28 menaces / 5 composants"
+- Score : "—"
+- Statut : "78,6% des menaces couvertes" (en vert)
+
+Couleur : violet (EDE9FE / 6D28D9) pour distinguer STRIDE de l'OWASP.
+
+Pourquoi : Le dossier technique (section 4.1) décrit une analyse STRIDE complète :
+28 menaces identifiées sur 5 composants (API, Web, Mobile, BDD, GitHub Actions),
+78,6% couvertes. Cette analyse complémentaire à l'OWASP démontre une approche
+sécurité robuste et multi-référentiel, valorisant le critère "analyse des vulnérabilités"
+(3 pts). Elle n'apparaissait nulle part dans le diaporama avant cette modification.
+
+--- Modification 4 : Slide 19 (Bilan final) ---
+Avant (carte "Analyse OWASP") : "10/10 analysés — 90% couverts"
+Après : "OWASP 90% + STRIDE 28 menaces 78,6%"
+
+Pourquoi : Cohérence avec la modification précédente. Le bilan final doit refléter
+les deux analyses de sécurité menées. Cette formulation synthétique montre une
+couverture sécurité à deux niveaux (framework OWASP + modélisation STRIDE),
+argument fort pour la soutenance.
+
+=== POURQUOI CES MODIFICATIONS MAINTENANT ===
+
+La soutenance est le 2026-07-10 (lendemain). Le dossier technique a été finalisé la
+veille (2026-07-08). Ces 4 incohérences ont été identifiées en comparant le contenu
+des deux livrables. La priorité était de s'assurer que le jury peut faire le lien entre
+ce qui est dit à l'oral (diaporama) et ce qui est écrit (dossier), pour une évaluation
+cohérente sur les deux supports.
+
+=== IMPACT SUR LA GRILLE D'ÉVALUATION ===
+
+- Déploiement (automatisations) : +0,5 pt estimé (incidents réels cités = expérience prouvée)
+- Maintenance (ticketing SIEM) : +0,5 pt estimé (mécanisme auto visible sur diapo)
+- Sécurisation (analyse vulnérabilités) : +1 pt estimé (STRIDE visible = analyse multi-référentiel)
+
+=== FICHIER GÉNÉRÉ ===
+
+Sortie : scratchpad/Soutenance_Bloc3_CESIZen_v2.pptx
+(à copier sur docs-bloc3/Soutenance_Bloc3_CESIZen.pptx après validation de Clément)
+
+Validation du pack : PASSED (auto-repair: 1 issue mineur xml:space dans slide10.xml)

@@ -1,0 +1,302 @@
+DATE : 2026-07-07
+ACTION : Script oral soutenance Bloc 3 — Structure 20 slides (1 min/slide)
+
+DURÉE TOTALE VISÉE : 20 minutes
+RÈGLE : ~1 minute par slide, démo sur slides 17-18
+
+═══════════════════════════════════════════════════════════════════════════════
+SLIDE 1 — COUVERTURE (30 s)
+═══════════════════════════════════════════════════════════════════════════════
+"Bonjour. Je suis Clément Souil, étudiant en CDA au CESI.
+Aujourd'hui je vous présente le Bloc 3 : Déployer et sécuriser les applications
+informatiques, appliqué à mon projet fil rouge CESIZen — une application de
+bien-être mental."
+
+═══════════════════════════════════════════════════════════════════════════════
+SLIDE 2 — SOMMAIRE (45 s)
+═══════════════════════════════════════════════════════════════════════════════
+"Je vais vous présenter 9 axes en 20 minutes :
+d'abord le projet et son architecture, ensuite la stratégie de déploiement et
+le pipeline CI/CD, puis la maintenance via GitHub Issues,
+l'analyse de sécurité OWASP, la conformité RGPD, la gestion de crise,
+la veille technologique, et je terminerai par une démonstration live sur
+l'environnement de production Railway."
+
+═══════════════════════════════════════════════════════════════════════════════
+SLIDE 3 — SECTION : PRÉSENTATION (15 s)
+═══════════════════════════════════════════════════════════════════════════════
+"Commençons par le projet CESIZen."
+
+═══════════════════════════════════════════════════════════════════════════════
+SLIDE 4 — ARCHITECTURE & FONCTIONNALITÉS (1 min 30 s)
+═══════════════════════════════════════════════════════════════════════════════
+"CESIZen est une application full-stack.
+Côté backend : une API REST en .NET 9 ASP.NET Core, MySQL 8 via Entity
+Framework Core, et une authentification JWT avec roles USER et ADMIN.
+Côté frontend : une web app React 18 + TypeScript + Vite, et une application
+mobile React Native + Expo.
+L'ensemble est déployé sur Railway, un PaaS cloud.
+
+Trois modules fonctionnels :
+— Module 1 : Comptes utilisateurs, inscription, connexion, RBAC complet.
+— Module 2 : Ressources documentaires avec filtres et approbation admin.
+— Module au choix : Diagnostics de stress Holmes & Rahe, 43 événements
+  pondérés scientifiquement, calcul de score, interprétation et historique."
+
+═══════════════════════════════════════════════════════════════════════════════
+SLIDE 5 — SECTION : DÉPLOIEMENT (15 s)
+═══════════════════════════════════════════════════════════════════════════════
+"Passons au plan de déploiement."
+
+═══════════════════════════════════════════════════════════════════════════════
+SLIDE 6 — VERSIONING & ENVIRONNEMENTS (1 min 15 s)
+═══════════════════════════════════════════════════════════════════════════════
+"Pour le versioning, j'utilise Git Flow adapté sur GitHub.
+Deux branches protégées : master pour la production, develop pour
+l'intégration. Aucun commit direct n'est autorisé — tout passe par Pull Request
+avec CI obligatoirement verte.
+Convention de commits : feat:, fix:, ci:, security: pour la traçabilité.
+
+Pour les environnements :
+— Développement en local avec dotnet run, npm run dev et WampServer.
+— CI/Test sur GitHub Actions ubuntu-latest : build, tests, lint, scan.
+— Production sur Railway avec déploiement automatique au merge sur master.
+— Le rollback est possible en moins de 2 minutes via le dashboard Railway.
+— Les secrets sont gérés en trois couches : appsettings en dev,
+  GitHub Secrets en CI, Variables Railway en prod."
+
+═══════════════════════════════════════════════════════════════════════════════
+SLIDE 7 — SECTION : PIPELINE CI/CD (15 s)
+═══════════════════════════════════════════════════════════════════════════════
+"Le pipeline CI/CD."
+
+═══════════════════════════════════════════════════════════════════════════════
+SLIDE 8 — PIPELINE CI.YML (1 min 10 s)
+═══════════════════════════════════════════════════════════════════════════════
+"Le pipeline GitHub Actions ci.yml comporte 5 jobs automatisés, déclenchés
+à chaque push et pull request sur develop et master.
+
+Job 1 : Build et tests de l'API — setup .NET 9, restore, build Release, xUnit.
+Job 2 : Lint et build du frontend — npm ci, ESLint, Vite build.
+Job 3 : Scan de sécurité Trivy — deux scans CVE CRITICAL et HIGH, un sur les
+dépendances NuGet du backend, un sur les dépendances npm du frontend.
+Job 4 : SonarCloud — analyse statique et Quality Gate bloquant.
+Job 5 : Deploy Gate — approbation manuelle via GitHub Environments avant tout
+déploiement en production, même pour moi.
+
+Aucun code défaillant ne peut atteindre la production."
+
+═══════════════════════════════════════════════════════════════════════════════
+SLIDE 9 — SÉCURITÉ DU PIPELINE (1 min)
+═══════════════════════════════════════════════════════════════════════════════
+"J'ai sécurisé le pipeline lui-même contre les attaques supply chain.
+Les actions tierces GitHub sont épinglées sur leur SHA complet — pas sur
+une version tag qui peut être modifiée.
+npm ci s'exécute avec --ignore-scripts pour neutraliser les scripts malveillants.
+Les secrets — SONAR_TOKEN, JWT_KEY — passent par des variables d'environnement,
+jamais dans le YAML en clair.
+SonarCloud surveille la qualité et la sécurité du code en continu — l'analyse
+se fait uniquement via la CI, pas en double avec l'analyse automatique de
+SonarCloud, pour éviter les conflits de configuration."
+
+═══════════════════════════════════════════════════════════════════════════════
+SLIDE 10 — MAINTENANCE — GITHUB ISSUES (1 min)
+═══════════════════════════════════════════════════════════════════════════════
+"Pour la maintenance, j'utilise GitHub Issues comme outil de ticketing,
+configuré avec des labels et des milestones.
+
+Labels : bug, enhancement, security, documentation, veille, priority:high.
+Milestones : v1.0.0 pour le Bloc 2, v1.1.0 pour le Bloc 3, v2.0.0 pour
+les évolutions futures comme le reset de mot de passe ou le rate limiting.
+
+Le flux de traitement est structuré en 6 étapes : détection → triage →
+développement sur branche dédiée → PR + CI verte → merge → fermeture du ticket.
+Chaque ticket est lié au commit ou à la PR correspondante pour la traçabilité."
+
+═══════════════════════════════════════════════════════════════════════════════
+SLIDE 11 — SECTION : SÉCURISATION (15 s)
+═══════════════════════════════════════════════════════════════════════════════
+"Le plan de sécurisation — la partie centrale."
+
+═══════════════════════════════════════════════════════════════════════════════
+SLIDE 12 — OWASP TOP 10 (1 min 15 s)
+═══════════════════════════════════════════════════════════════════════════════
+"J'ai analysé les 10 vulnérabilités OWASP 2021 avec la formule
+Criticité = Probabilité × Impact sur une échelle de 1 à 3.
+
+Les scores les plus élevés, 6, concernent A01 le contrôle d'accès
+et A07 les échecs d'authentification.
+A04, A05 et A09 ont un score de 4 — partiellement couverts.
+Les autres sont couverts ou non applicables.
+
+Résultat : 90% de couverture, largement au-dessus du seuil requis de 75%."
+
+═══════════════════════════════════════════════════════════════════════════════
+SLIDE 13 — ACTIONS CORRECTIVES (1 min)
+═══════════════════════════════════════════════════════════════════════════════
+"Concrètement, voici les mesures prises.
+
+Implémentées : JWT RBAC avec rôles USER et ADMIN sur tous les endpoints
+sensibles. La clé JWT est externalisée des sources vers GitHub Secrets et
+Railway. Entity Framework Core élimine tout SQL brut. Trivy tourne à chaque CI.
+Les actions GitHub sont épinglées sur SHA pour la supply chain.
+
+Planifiées pour la v2 : rate limiting sur le login, politique de complexité
+de mots de passe, restriction CORS sur l'URL Railway uniquement,
+et journalisation des événements de sécurité."
+
+═══════════════════════════════════════════════════════════════════════════════
+SLIDE 14 — RGPD & DONNÉES PERSONNELLES (1 min)
+═══════════════════════════════════════════════════════════════════════════════
+"CESIZen collecte des données personnelles dont certaines sont des données de
+santé au sens du RGPD, article 9 : les résultats de diagnostic de stress
+Holmes & Rahe sont des données sensibles.
+
+Mesures en place : mots de passe hachés, HTTPS via Railway, accès aux
+diagnostics restreint à l'utilisateur concerné, séparation stricte des
+environnements — aucune donnée réelle en développement.
+Politique de rétention : 2 ans pour les diagnostics, suppression en cascade.
+
+Limite identifiée : pas encore de droit à la portabilité ni d'auto-suppression
+de compte — axes d'évolution pour la v2."
+
+═══════════════════════════════════════════════════════════════════════════════
+SLIDE 15 — GESTION DE CRISE (1 min)
+═══════════════════════════════════════════════════════════════════════════════
+"J'ai documenté 4 scénarios de crise avec leurs procédures de réponse.
+
+P1 Critique, réponse en moins de 30 minutes :
+— Fuite de données : isolation Railway, reset credentials, notification CNIL
+  dans les 72 heures conformément à l'article 33 du RGPD.
+— Compromission CI/CD : désactivation pipeline, reset secrets, audit commits.
+
+P2 Majeur : indisponibilité service — vérification status Railway, rollback
+Redeploy en moins de 2 minutes. RTO : 2h, RPO : 24h.
+
+P3 Mineur : intrusion détectée — analyse logs, ticket security, hotfix.
+Chaque incident est clôturé par un post-mortem sur GitHub Issues."
+
+═══════════════════════════════════════════════════════════════════════════════
+SLIDE 16 — VEILLE TECHNOLOGIQUE (1 min)
+═══════════════════════════════════════════════════════════════════════════════
+"La veille est organisée sur trois fréquences.
+Quotidien : NVD, ANSSI pour les CVE. Hebdomadaire : GitHub Changelog,
+TLDR Security. Mensuel : devblogs.microsoft.com, OWASP.
+
+Et une veille automatisée : Trivy, SonarCloud et Dependabot dans le pipeline CI.
+
+4 actions concrètes issues de cette veille :
+SHA pinning suite aux supply chain attacks documentées en 2024,
+--ignore-scripts après les cas de npm script injection,
+passage des secrets CI en variables d'environnement,
+et l'analyse OWASP complète appliquée à CESIZen."
+
+═══════════════════════════════════════════════════════════════════════════════
+SLIDE 17 — SECTION : DÉMONSTRATION (15 s)
+═══════════════════════════════════════════════════════════════════════════════
+"Je vais maintenant vous faire la démonstration live sur l'environnement
+de production."
+
+═══════════════════════════════════════════════════════════════════════════════
+SLIDE 18 — DÉMONSTRATION LIVE (2 min 30 s)
+═══════════════════════════════════════════════════════════════════════════════
+"L'environnement de production tourne sur Railway.
+
+ÉTAPE 1 — PROD EN LIGNE (30 s)
+Ouvrez cesizen-[url].up.railway.app dans le navigateur.
+"L'application est bien en production sur Railway, avec HTTPS automatique."
+
+ÉTAPE 2 — COMPTE & FONCTIONNALITÉS (45 s)
+Connectez-vous en admin. Montrez les ressources, le questionnaire stress,
+l'historique.
+"Voici les 3 modules fonctionnels en production, accessibles via JWT."
+
+ÉTAPE 3 — CI/CD (30 s)
+Ouvrez GitHub → Actions : montrez un run vert avec les 5 jobs.
+"Chaque merge sur master déclenche automatiquement ce pipeline, avec un
+gate d'approbation manuelle avant tout déploiement en production."
+
+ÉTAPE 4 — GITHUB ISSUES (20 s)
+Montrez les labels et un milestone v1.1.0.
+"Le ticketing est configuré et opérationnel."
+
+ÉTAPE 5 — SONARCLOUD (15 s) [si le temps le permet]
+Montrez le Quality Gate vert.
+
+═══════════════════════════════════════════════════════════════════════════════
+SLIDE 19 — BILAN DES CRITÈRES (1 min)
+═══════════════════════════════════════════════════════════════════════════════
+"En bilan, tous les critères du Bloc 3 sont atteints.
+
+Environnement déployé avec automatisations : Railway + GitHub Actions.
+Versioning : Git Flow avec protection de branches.
+Ticketing : GitHub Issues avec labels et milestones.
+Analyse OWASP : 10 vulnérabilités analysées, 90% couvertes.
+RGPD : registre, droits, mesures de protection.
+Gestion de crise : 4 scénarios documentés.
+Veille : sources multiples et automatisée en CI.
+
+L'ensemble des livrables — code, pipeline, dossier technique — sont
+disponibles sur github.com/Clement-Souil/CesiZen."
+
+═══════════════════════════════════════════════════════════════════════════════
+SLIDE 20 — MERCI (30 s + Q&R)
+═══════════════════════════════════════════════════════════════════════════════
+"Je vous remercie pour votre attention.
+Je suis disponible pour vos questions."
+
+─── Si on me demande sur l'IA ───────────────────────────────────────────────
+"J'ai utilisé Claude Code comme assistant de développement, similaire à
+GitHub Copilot mais avec plus d'autonomie. Je reste l'auteur de toutes
+les décisions techniques : choix d'architecture, analyse OWASP, politique
+RGPD. L'IA m'a aidé à aller plus vite sur l'implémentation, ce qui m'a
+permis de consacrer plus de temps à la sécurité et à la documentation."
+
+─── Si on me demande sur le reset de mot de passe ───────────────────────────
+"J'ai implémenté le changement de mot de passe — qui nécessite l'ancien
+mot de passe. La réinitialisation par email avec token temporaire est
+identifiée comme axe d'évolution v2 : elle implique un service SMTP et une
+table de tokens à durée limitée."
+
+─── Si on me demande sur Railway vs Docker ──────────────────────────────────
+"Railway offre CI/CD automatique, HTTPS, et base de données managée
+sans configuration Docker ni infra à gérer. Pour un projet individuel
+étudiant, c'est le meilleur rapport complexité/valeur. Docker reste
+pertinent pour des déploiements plus complexes ou on-premise."
+
+─── Si on me demande sur STRIDE ──────────────────────────────────────────────
+"STRIDE est un framework de modélisation des menaces : Spoofing, Tampering,
+Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege.
+J'ai utilisé OWASP Top 10 comme référentiel principal car plus adapté
+aux applications web, mais STRIDE est complémentaire pour l'analyse
+des flux de données."
+
+─── Si on me demande comment je sais que mes "conteneurs" sont sécurisés ────
+"Nuance importante : je n'ai pas de Dockerfile — Railway construit le
+conteneur automatiquement via Railpack. Trivy scanne donc mes dépendances
+en mode fs, pas une image construite en mode image. C'est un compromis du
+choix PaaS : simplicité contre contrôle direct sur l'image. Je n'utilise pas
+Snyk non plus — Trivy fait déjà ce travail de SCA, sur le backend et le
+frontend, sans ajouter un outil et un compte supplémentaires."
+
+─── Si on me demande le fonctionnement exact du JWT et du RBAC ─────────────
+"À la connexion, l'API vérifie le mot de passe haché BCrypt, puis génère un
+JWT signé HMAC-SHA512 contenant l'identifiant, l'email et le rôle, valide
+1 heure. Chaque endpoint sensible porte un attribut Authorize avec le rôle
+requis — ASP.NET Core vérifie ça côté serveur à chaque requête, impossible
+à contourner depuis le frontend. Le mot SHA a deux sens différents dans le
+projet : HMAC-SHA512 pour signer le JWT, et le SHA d'un commit Git pour
+épingler les actions GitHub tierces contre les attaques supply chain."
+
+═══════════════════════════════════════════════════════════════════════════════
+CHIFFRES CLÉS À RETENIR (aide-mémoire)
+═══════════════════════════════════════════════════════════════════════════════
+43       événements Holmes & Rahe
+90%      couverture OWASP (9/10 traités)
+47       tests unitaires (39 xUnit backend + 8 Vitest frontend)
+5        jobs CI/CD (api, web, security x2 scans, sonar, deploy)
+2 min    RTO Railway (rollback)
+72h      délai CNIL notification fuite données (Art. 33 RGPD)
+20       slides — environ 1 min/slide
+5289     port API (local)  |  5173 port Web (local)
+A27+/34  seuil grade A Bloc 3

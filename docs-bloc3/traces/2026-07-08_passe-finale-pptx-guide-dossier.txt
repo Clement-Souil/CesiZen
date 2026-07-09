@@ -1,0 +1,79 @@
+DATE : 2026-07-08
+ACTION : Passe finale de synchronisation — PPTX, Guide de préparation, Dossier Technique
+
+CONTEXTE :
+Après une longue session de questions/réponses et de corrections techniques
+(tests, Trivy, protection de branches, resync develop, conflit SonarCloud),
+Clément a demandé une passe finale pour que tous les livrables collent
+exactement à l'état réel du projet.
+
+1. DOSSIER TECHNIQUE — étoffement complémentaire
+Ajout de contenu réel (pas de remplissage) pour dépasser confortablement le
+minimum de 15 pages (était retombé à 14 après une première correction) :
+- §2.3 tableau des secrets par couche (dev/CI/prod)
+- §4.3 tableau "Défense en profondeur" (SAST/SCA/Image/DAST/Supervision)
+- §4.6 tableau de références précises fichier:ligne pour JWT/RBAC
+- §4.9 nouvelle section "Sécurité de la chaîne d'approvisionnement" (SHA
+  pinning, npm --ignore-scripts, Trivy — synthèse des 3 défenses supply chain)
+- §4.8 tableau des responsabilités et canaux de communication en crise
+- §5.2 tableau des sources de veille (déplacé/complété)
+- Annexe A : liste des documents complémentaires
+- Annexe B : glossaire (RBAC, JWT, SHA, SAST, SCA, DAST, PaaS, SIEM,
+  MTTD/MTTR, RTO/RPO, CVE, Quality Gate)
+Résultat : ~5 024 mots, 25 tableaux (visé : 16-17 pages réelles).
+
+2. GUIDE DE PRÉPARATION — nouvelle section Q/R
+Ajout de la section "5.5 Questions techniques approfondies" reprenant les
+concepts creusés pendant la session (RBAC, fonctionnement JWT étape par
+étape, SHA à double sens, attaques supply chain, pourquoi pas Snyk, nuance
+conteneurs sécurisés, différence ci.yml/monitoring.yml) — 7 paires Q/R au
+même format que les sections existantes. Mise à jour de l'aide-mémoire :
+ligne "Jobs GitHub Actions" passée de 4 à 5 (avec double scan Trivy), ajout
+d'une ligne "Tests unitaires : 47".
+
+3. PPTX — recoloration complète + corrections de contenu
+a) Recoloration de la palette entière (20 slides) pour qu'elle s'inspire des
+   vraies couleurs de l'application CESIZen plutôt que du PPTX de référence
+   Bloc 2 :
+   - Teal générique (#00897B) → #0D9488 (teal-600, couleur de marque réelle)
+   - Navy (#1E2761, #1A2744, variantes) → nuances de teal foncé
+     (#115E59 teal-800, #042F2E teal-950 pour les fonds pleins sombres)
+   - Bleu Frontend (#3B82F6) → #0D9488 (cohérence teal partout)
+   - Ambre générique (#C97B00) → #B45309 (amber-700, couleur exacte du
+     statut "Modéré" dans l'appli)
+   - Rouge/orange → #B91C1C (red-700, couleur exacte du statut "Élevé")
+   - Tintes claires de cards → #F0FDFA (teal-50), #FFFBEB (amber-50)
+   Les teintes vert/rouge déjà présentes (BBF7D0, FECACA) correspondaient
+   déjà exactement aux couleurs Tailwind vert-200/rouge-200 utilisées par
+   l'application — aucun changement nécessaire dessus.
+
+b) BUG DE CONTRASTE CORRIGÉ (pré-existant, pas causé par la recoloration) :
+   sur les 5 slides de séparation de section ("01" Présentation, "02"
+   Déploiement, "03" Pipeline, "05" Sécurisation, "09" Démonstration) ainsi
+   que sur la slide de contenu "Démonstration", le titre et le sous-titre
+   étaient en blanc/clair sans aucun fond sombre en dessous — texte
+   invisible sur fond blanc. Corrigé : titre en teal-800 (#115E59), sous-
+   titre en teal-700 (#0F766E). Vérification systématique par chevauchement
+   de zones sur les 20 slides : aucun autre cas détecté.
+
+c) Contenu texte resynchronisé avec l'état réel du pipeline :
+   - Slide 8 (Pipeline ci.yml) : Job 3 mentionne désormais les 2 scans
+     Trivy (NuGet + npm) au lieu d'un seul ; ajout d'une ligne dédiée au
+     Job 5 (Deploy Gate), sans supprimer l'information sur le déclenchement
+     (nouvelle shape dupliquée et repositionnée proprement, pas de texte
+     tronqué ni de ligne surchargée)
+   - Slide 9 (Sécurité pipeline) : "Analyse CI (non automatique)" corrigé en
+     "Analyse CI uniquement (Automatic Analysis désactivée)" — reflète le
+     correctif SonarCloud effectué dans la session
+   - Slide 19 (Bilan) : "GitHub Actions (4 jobs)" corrigé en "(5 jobs)"
+
+POURQUOI MAINTENANT :
+Clément a demandé la synchronisation finale de tous les documents après la
+série de questions/corrections de la session, avant la soutenance du 09 ou
+10/07/2026. L'objectif : qu'aucun document ne contredise l'état réel du
+projet démontré en direct.
+
+COHÉRENCE AVEC LE PROJET :
+- Bloc 3 critère "Qualité du dossier écrit" (/1 pt)
+- Bloc 3 critère "Support de soutenance visuel et équilibré" (/1 pt)
+- Cohérence entre ce qui est écrit et ce qui est démontré en direct

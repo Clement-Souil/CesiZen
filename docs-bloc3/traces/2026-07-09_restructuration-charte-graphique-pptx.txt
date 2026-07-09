@@ -1,0 +1,63 @@
+DATE : 2026-07-09
+ACTION : Restructuration complète de la charte graphique du PPTX (v2)
+
+CONSTAT :
+Le premier passage (recolorage simple, voir trace précédente) ne correspondait
+pas à la demande : Clément voulait une vraie restructuration façon PPTX de
+référence (motif icône-dans-cercle, formes organiques) — pas juste un
+remplacement de couleurs sur les mêmes blocs rectangulaires. Direction
+précisée en 3 temps : (1) s'inspirer des couleurs CesiZen mais moins flashy,
+(2) des ronds plutôt que des rectangles, (3) une palette plus large avec des
+nuances inhabituelles. Palette retenue par Clément : "Bien-être chaleureux"
+— Teal CesiZen adouci (#0F766E) en ancre, + Sauge (#8FAE9E), Terracotta
+(#C98A6B), Lavande (#A79BC9), Sable clair (#F5EFE6) en neutre.
+
+CE QU'ON A FAIT (4 étapes) :
+
+1. SUPPRESSION des blocs plats "flashy" (66 formes sur 20 slides) :
+   - Le grand panneau latéral plein (couvrant ~40% de la largeur, solide,
+     identifié comme LE principal élément "flashy")
+   - Barres pleine largeur/hauteur (haut, bas, gauche) sur chaque slide
+   - Mini-bandes et séparateurs rectangulaires
+
+2. AJOUT de décorations organiques + motif icône-dans-cercle :
+   - Cercles doux en fond (teinte claire, ~70% alpha) sur les 5 slides de
+     section, une couleur différente par section (teal/sauge/terracotta/
+     lavande) pour la variété demandée
+   - Badges icône-dans-cercle (cercle plein + icône noire du jeu de
+     référence + ombre douce) sur 4 des 5 slides de section — la 5e
+     (« 01 Présentation ») possédait déjà une vraie capture d'écran de
+     l'application CESIZen : badge retiré pour ne pas la recouvrir
+   - Icônes choisies par thème : couches/architecture (01), fusée (02
+     déploiement), cycle/refresh (03 pipeline), bouclier (05 sécurisation),
+     moniteur (09 démonstration)
+   - Cercles bien-être sur couverture et clôture
+
+3. ASSOUPLISSEMENT des bandeaux de titre pleins (Backend/Frontend, Labels/
+   Milestones, etc.) : passage d'un fond saturé + texte blanc à un fond en
+   teinte très claire + texte foncé en gras, sur 7 slides de contenu (14
+   pastilles, 14 textes), avec une couleur différente par slide pour éviter
+   la monotonie tout en gardant un rendu sobre.
+
+4. Badges numérotés du Sommaire (9 carrés colorés "01"-"09") convertis en
+   CERCLES, coloriés en alternance sur les 4 teintes de la palette.
+
+VÉRIFICATIONS EFFECTUÉES (pas de rendu visuel possible — LibreOffice
+indisponible dans cet environnement, vérifications structurelles uniquement) :
+- Audit systématique de contraste texte/fond par chevauchement de zones sur
+  les 20 slides : aucun texte clair sans fond suffisamment sombre détecté
+- Audit spécifique des badges icône-cercle : aucun chevauchement avec les
+  zones de texte (titre/sous-titre) sur les 4 slides concernées
+- Découverte et correction d'un conflit réel : le badge ajouté sur la slide
+  "01 Présentation" recouvrait partiellement une capture d'écran authentique
+  de l'application CESIZen déjà présente sur cette slide — retiré
+- Fichier validé ouvrable (python-pptx) après chaque étape
+
+POINT D'ATTENTION POUR CLÉMENT :
+Faute d'outil de rendu visuel disponible ici, la vérification finale doit se
+faire à l'ouverture réelle dans PowerPoint — en particulier la lisibilité des
+nouvelles teintes claires et le rendu des badges icône-cercle sur les 4
+slides de section concernées.
+
+COHÉRENCE AVEC LE PROJET :
+Bloc 3 critère "Support de soutenance visuel et équilibré" (/1 pt).

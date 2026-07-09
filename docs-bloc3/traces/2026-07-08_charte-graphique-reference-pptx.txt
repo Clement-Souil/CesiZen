@@ -1,0 +1,204 @@
+DATE : 2026-07-08
+ACTION : Analyse de la charte graphique du PPTX de référence (Bloc 2, groupe)
+
+FICHIER SOURCE (référence — NE PAS MODIFIER) :
+C:\Users\souil\OneDrive\Bureau\GitProject\Bloc 2 en groupe CDA\Soutenance-INFCDAAL3-RE-Sources-Relationnelles.pptx
+21 slides, format 12192000 x 6858000 EMU (standard 16:9)
+
+OBJECTIF :
+Extraire le style visuel de ce PPTX (couleurs, typographie, motifs, mise en page)
+pour l'appliquer plus tard à Soutenance_Bloc3_CESIZen.pptx (20 slides), une fois
+les modifications de contenu terminées sur le reste du projet. Ce fichier sert
+de mémoire persistante entre les sessions pour ne pas devoir ré-analyser le PPTX
+de référence.
+
+═══════════════════════════════════════════════════════════════════════════════
+PALETTE DE COULEURS
+═══════════════════════════════════════════════════════════════════════════════
+
+BASE (fond & texte neutre) :
+  #1B1130   Violet quasi-noir — couleur de shadow (18% alpha), le plus sombre
+  #241B33   Violet sombre — texte des titres sur fond clair
+  #241640   Violet sombre — fond de la slide de couverture
+  #6B6480   Gris-violet mat — texte secondaire / sous-titres
+  #FFFFFF   Blanc pur — texte sur fond sombre
+  #FFFEFC   Blanc cassé — fond des slides de contenu (presque toutes)
+
+ACCENTS PAR SECTION (1 couleur = 1 des 3 grandes parties du plan) :
+  #0E9594   Teal      — Section "Plan de déploiement" (slides 4-9)
+  #E8622C   Orange    — Section "Plan de maintenance"  (slides 10-14)
+  #8E2C7E   Magenta   — Section "Plan de sécurisation" (slides 15-19)
+  #F0A93B   Amber/Or  — Accent universel (couverture, sommaire, éléments transverses)
+
+TEINTES CLAIRES ASSOCIÉES (fond de cards/pills, pairées à l'accent de section) :
+  #DDF3F1   Teal clair    (pair de #0E9594)
+  #FCE6DA   Pêche clair   (pair de #E8622C)
+  #F4E3F0   Rose clair    (pair de #8E2C7E)
+
+STATUTS :
+  #3FBF8F   Vert  — succès / validation
+  #C0392B   Rouge — erreur / alerte
+
+RÈGLE DE STRUCTURE "SANDWICH" :
+  - Couverture (slide 1) : fond plein #241640 (sombre), texte blanc
+  - Toutes les autres slides : fond #FFFEFC (quasi-blanc), texte sombre
+  → Contraste dark/light uniquement en ouverture, le reste est clair et aéré
+
+═══════════════════════════════════════════════════════════════════════════════
+TYPOGRAPHIE
+═══════════════════════════════════════════════════════════════════════════════
+
+Police unique : Calibri (aucun font pairing — un seul choix, décliné par
+poids/taille/casse plutôt que mélangé avec une police secondaire).
+
+Hiérarchie observée :
+  - Titre principal de slide  : ~27pt, gras, couleur #241B33 (violet sombre)
+  - Eyebrow / kicker label    : ~12.5pt, gras, TOUT EN MAJUSCULES, tracking
+                                 +1pt (spc="100"), coloré dans l'accent de la
+                                 section (ex. "PLAN DE DÉPLOIEMENT" en teal)
+  - Texte courant             : taille standard, gris-violet (#6B6480) ou
+                                 violet sombre selon le contexte
+  - Numéro de slide           : format "n/21" en bas de slide
+
+═══════════════════════════════════════════════════════════════════════════════
+MOTIF ICONOGRAPHIQUE — "Icône dans un cercle coloré"
+═══════════════════════════════════════════════════════════════════════════════
+
+Motif répété systématiquement à travers tout le deck :
+  1. Cercle (ellipse) plein, rempli de la couleur accent de la section
+     (ex. teal #0E9594), diamètre ~731520 EMU (~0,76 pouce / ~2 cm)
+  2. Ombre portée douce derrière le cercle (voir section Ombres ci-dessous)
+  3. Icône plate monochrome NOIRE (style Bootstrap Icons / Font Awesome solid,
+     PNG 300x300px, fond transparent) centrée exactement à l'intérieur du cercle
+     (icône ~336499 EMU, soit ~46% du diamètre du cercle)
+
+21 icônes PNG différentes utilisées dans le deck (nuage, serveurs empilés,
+cadenas, etc.) — toutes en noir plein, jamais recolorées par PowerPoint
+(pas de duotone/tint XML — ce sont des fichiers PNG déjà noirs).
+
+═══════════════════════════════════════════════════════════════════════════════
+MOTIF DE CARTES — "Card" et "Pill"
+═══════════════════════════════════════════════════════════════════════════════
+
+Deux variantes de rectangle à coins arrondis (roundRect) :
+  - Card (contenu)  : coin arrondi modéré, paramètre adj="24000"
+                      remplie de la teinte CLAIRE de l'accent de section
+                      (ex. #DDF3F1 pour la section teal), sans bordure
+  - Pill (étiquette) : coin arrondi maximal, paramètre adj="50000" (= pilule)
+                      même logique de couleur, utilisée pour petits tags/labels
+
+Aucune bordure (a:ln vide) sur ces formes — seule la couleur de fond distingue
+le bloc du fond de la slide.
+
+═══════════════════════════════════════════════════════════════════════════════
+SYSTÈME D'OMBRES — 3 paliers, aucune bordure, AUCUN dégradé
+═══════════════════════════════════════════════════════════════════════════════
+
+Design 100% plat (flat design) — confirmé : 0 gradient trouvé dans tout le
+fichier. La profondeur est donnée uniquement par des ombres portées douces,
+toujours dans la même direction (vers le bas, dir="5400000"), couleur
+#1B1130 à ~18% d'opacité, avec 3 intensités de flou selon la taille de
+l'élément :
+  - Gros éléments (cercles d'icône)     : blurRad="177800"  dist="63500"
+  - Éléments moyens (cards)             : blurRad="101600"  dist="38100"
+  - Petits éléments                     : blurRad="76200"   dist="25400"
+
+═══════════════════════════════════════════════════════════════════════════════
+STRUCTURE DU DECK DE RÉFÉRENCE (pour inspiration de mise en page)
+═══════════════════════════════════════════════════════════════════════════════
+
+Slide 1  : Couverture — fond sombre plein, titre + sous-titre + auteurs + date
+Slide 2  : Sommaire — 3 grandes cards horizontales (une par plan), avec icône
+           en cercle coloré, numéro "01/02/03", titre, description, auteur
+           responsable, nombre de slides ("6 slides" etc.)
+Slide 3  : Rappel projet — schéma 3 blocs (web / API / mobile) avec icônes
+Slides 4-9   : Plan de déploiement (accent teal) — eyebrow "PLAN DE DÉPLOIEMENT"
+Slides 10-14 : Plan de maintenance (accent orange) — eyebrow correspondant
+Slides 15-19 : Plan de sécurisation (accent magenta) — eyebrow correspondant
+Slides 20-21 : Clôture
+
+Chaque section a un eyebrow label coloré + un gros numéro/chiffre d'ordre en
+haut de slide pour ancrer visuellement la progression.
+
+═══════════════════════════════════════════════════════════════════════════════
+MISE À JOUR 2026-07-08 — PALETTE REMPLACÉE PAR L'IDENTITÉ RÉELLE DE CESIZEN
+═══════════════════════════════════════════════════════════════════════════════
+
+Décision de Clément : ne PAS reprendre la palette du PPTX de référence
+(violet + teal/orange/magenta arbitraires). À la place, la palette du futur
+Soutenance_Bloc3_CESIZen.pptx doit s'inspirer des couleurs RÉELLES de
+l'application CESIZen (web + mobile), extraites du code source.
+
+CONSTAT (code réel, cesizen-web/src) :
+  - Couleur de marque unique et dominante : TEAL (Tailwind teal-600), utilisée
+    dans les boutons primaires, la navigation (BottomNav), les headers de
+    toutes les pages (HomePage, DocumentsPage, ProfilePage, StressTestPage,
+    AdminDashboard) — confirmée identique côté mobile (CESIZenMobile/src)
+  - Pas de couleur différente par catégorie de ressource (Stress, Anxiété,
+    Dépression, Bien-être, Relations, Autre) — toutes en teal, différenciées
+    seulement par icône (Activity, Heart, Brain, Users de lucide-react)
+  - Fond de page HomePage : dégradé doux "from-teal-50 to-white"
+  - Couleurs de statut RÉELLES pour les résultats de diagnostic de stress
+    (StressTestPage.tsx, fonction getInterpretation) :
+      Faible  → vert  (text-green-700 / bg-green-50 / border-green-200)
+      Modéré  → ambre (text-amber-700 / bg-amber-50 / border-amber-200)
+      Élevé   → rouge (text-red-700 / bg-red-50 / border-red-200)
+
+NOUVELLE PALETTE POUR LE PPTX (hex Tailwind standard) :
+  #0D9488   Teal 600  — ACCENT PRINCIPAL (remplace tous les accents de
+                         section du PPTX de référence — CESIZen est un
+                         projet individuel, une seule couleur de marque)
+  #0F766E   Teal 700  — variante plus sombre (hover, ombres teintées, textes)
+  #115E59   Teal 800  — texte foncé sur fond clair
+  #134E4A   Teal 900  — texte très foncé / alternative au violet sombre du
+                         PPTX de référence pour les titres
+  #042F2E   Teal 950  — fond sombre de la couverture et de la clôture
+                         (remplace le violet #241640 du PPTX de référence —
+                         garde la structure "sandwich" mais 100% teintée teal)
+  #F0FDFA   Teal 50    — fond de dégradé / teinte très claire de card
+  #CCFBF1   Teal 100   — teinte claire de card/pill (équivalent du DDF3F1
+                         du PPTX de référence, mais en teal réel de l'appli)
+
+  STATUTS (repris tels quels de l'application — cohérence totale) :
+  #15803D / #F0FDF4   Vert  — succès, "Faible" (diagnostic stress), Couvert (OWASP)
+  #B45309 / #FFFBEB   Ambre — alerte modérée, "Modéré", Partiel (OWASP)
+  #B91C1C / #FEF2F2   Rouge — alerte critique, "Élevé", non couvert / P1 crise
+
+CE QUI RESTE INCHANGÉ DU PPTX DE RÉFÉRENCE (validé par Clément — "le reste
+on enregistre") :
+  - Police unique Calibri, hiérarchie de tailles/poids identique
+  - Motif "icône plate noire dans un cercle coloré" avec ombre douce
+  - Cards à coins arrondis (adj 24000) et pills (adj 50000), sans bordure
+  - Système d'ombres à 3 paliers, direction bas, aucun dégradé (flat design)
+  - Structure "sandwich" : couverture + clôture en fond sombre, contenu clair
+  - Eyebrow labels en majuscules avec tracking, colorés dans l'accent
+
+CONSÉQUENCE PRATIQUE : partout où le PPTX de référence utilisait
+teal/orange/magenta pour distinguer 3 auteurs/sections, le futur PPTX CESIZen
+utilisera UNE seule couleur de marque (teal, différentes nuances 50 à 950)
+pour tout l'habillage, et réservera vert/ambre/rouge exclusivement à leur
+usage sémantique réel : statuts, niveaux de risque, résultats de diagnostic —
+exactement comme dans l'application elle-même.
+
+═══════════════════════════════════════════════════════════════════════════════
+APPLICATION PRÉVUE À Soutenance_Bloc3_CESIZen.pptx (20 slides, projet individuel)
+═══════════════════════════════════════════════════════════════════════════════
+
+Adaptations nécessaires (CESIZen a 9 sections, pas 3 grandes parties) :
+  - Choisir 1 couleur d'accent unique (projet individuel, pas de découpage par
+    auteur) OU décliner 3-4 accents parmi la palette ci-dessus pour distinguer
+    visuellement Déploiement / Maintenance / Sécurisation / RGPD-Crise-Veille
+  - Réutiliser le motif "icône dans cercle coloré + ombre douce" pour habiller
+    les slides de section actuelles (actuellement juste "01"-"09" sur fond uni)
+  - Réutiliser les cards à coins arrondis (teinte claire) pour les blocs de
+    contenu (actuellement du texte simple avec puces)
+  - Garder la structure sandwich : couverture + clôture en fond sombre,
+    slides de contenu en fond clair
+  - NE PAS toucher au texte existant (20 slides déjà calées à ~1 min/slide) —
+    uniquement l'habillage visuel
+
+À FAIRE AU MOMENT DE LA REMODÉLISATION :
+  1. Relire ce fichier (pas besoin de ré-analyser le PPTX de référence)
+  2. Éventuellement récupérer 3-4 icônes PNG du deck de référence
+     (dossier ppt/media/ du fichier source) si le style de glyphe convient
+  3. Reconstruire le PPTX CESIZen avec python-pptx en appliquant cette charte
