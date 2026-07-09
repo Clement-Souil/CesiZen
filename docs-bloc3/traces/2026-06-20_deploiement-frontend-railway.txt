@@ -1,0 +1,31 @@
+DATE : 2026-06-20
+ACTION : Déploiement du frontend React sur Railway
+BRANCHE : feature/deploy-frontend
+
+CE QU'ON A FAIT :
+- Ajout de cesizen-web/railway.json : configuration de build (npm ci --ignore-scripts && npm run build)
+  et de démarrage (npx serve dist --listen 0.0.0.0:$PORT --single)
+- Ajout de cesizen-web/.env.production : VITE_API_URL pointe vers l'API Railway
+  (https://cesizen-production-7dc4.up.railway.app/api)
+- Ajout de "serve" dans les dépendances npm (serveur HTTP statique léger)
+- Création du service Web sur Railway avec Root Directory = cesizen-web
+- Variable d'environnement VITE_API_URL injectée côté Railway
+
+POURQUOI :
+Le critère Bloc 3 exige "1 environnement de déploiement réellement mis en place".
+Avoir uniquement l'API déployée ne suffit pas — le démonstrateur doit pouvoir accéder
+à l'application complète depuis une URL publique.
+
+RÉSULTAT :
+- API  : https://cesizen-production-7dc4.up.railway.app/api
+- Web  : URL Railway du service frontend (Static Site)
+- Environnement de production complet et fonctionnel
+
+COHÉRENCE AVEC LE PROJET :
+Railway est la plateforme PaaS choisie après l'impossibilité d'utiliser Azure for Students
+(politique régionale). Railway supporte nativement les projets Node.js/Vite et .NET,
+ce qui évite de gérer des Dockerfiles complexes pour une démo académique.
+
+UTILITÉ POUR LE DOSSIER :
+Cette trace + les captures d'écran de Railway constituent la preuve de déploiement
+exigée par la grille d'évaluation (critère "1 environnement configuré avec automatisations").

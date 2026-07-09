@@ -117,10 +117,11 @@ namespace CESIZenAPI
 
             app.MapControllers();
 
-            // Seed des événements de stress si la table est vide
+            // Apply migrations and seed data on startup
             using (var scope = app.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                db.Database.Migrate();
                 if (!db.StressEvents.Any())
                 {
                     db.StressEvents.AddRange(new List<StressEvent>

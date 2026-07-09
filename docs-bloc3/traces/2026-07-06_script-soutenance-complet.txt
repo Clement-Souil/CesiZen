@@ -1,0 +1,482 @@
+DATE : 2026-07-06
+DOCUMENT : Script complet de soutenance Bloc 3 — slide par slide
+DURÉE CIBLE : 20 minutes + 10 min Q&R
+
+============================================================
+AVANT DE COMMENCER — checklist 10 minutes avant
+============================================================
+
+- Ouvrir le PPTX en mode présentation (F5)
+- Ouvrir Chrome avec 4 onglets prêts :
+    1. https://cesizen-production-7dc4.up.railway.app/api/StressEvents
+    2. https://github.com/Clement-Souil/CesiZen/actions
+    3. https://github.com/Clement-Souil/CesiZen/pulls (PRs #15/#16/#17 visibles)
+    4. https://sonarcloud.io → projet Clement-Souil_CesiZen
+- Ouvrir un 2e Chrome avec http://localhost:5173 (web local connecté)
+- Être connecté sur GitHub
+
+
+============================================================
+SLIDE 1 — PAGE DE TITRE (~30s)
+============================================================
+
+"Bonjour. Je vais vous présenter mon travail de Bloc 3 :
+Déployer et sécuriser les applications informatiques,
+appliqué à CESIZen, l'application de bien-être mental
+que j'ai développée en fil rouge depuis le début de la formation."
+
+
+============================================================
+SLIDE 2 — SOMMAIRE (~30s)
+============================================================
+
+"Le plan de ma présentation suit les trois axes du Bloc 3 :
+d'abord le déploiement et le pipeline CI/CD,
+ensuite la maintenance avec le ticketing,
+et enfin la sécurisation avec OWASP, RGPD et la gestion de crise.
+Je terminerai par une démonstration live."
+
+
+============================================================
+SLIDE 3 — PRÉSENTATION DU PROJET (~30s)
+============================================================
+
+"CESIZen est une application de bien-être mental.
+Elle permet aux utilisateurs de consulter des ressources documentaires,
+et de réaliser un test de stress basé sur l'échelle de Holmes et Rahe,
+qui est un outil clinique reconnu avec 43 événements de vie pondérés."
+
+
+============================================================
+SLIDE 4 — STACK TECHNIQUE (~1 min)
+============================================================
+
+"La stack : côté backend, une API REST en .NET 9 ASP.NET Core,
+avec MySQL comme base de données via Entity Framework Core en Code First,
+et une authentification JWT avec gestion des rôles USER et ADMIN.
+
+Côté frontend, une application React 18 avec TypeScript et Vite,
+et une application mobile React Native Expo.
+
+Les deux sont déployés sur Railway — la plateforme PaaS que j'ai choisie.
+
+[→ QUESTION POSSIBLE : Pourquoi Railway plutôt que Docker ?]
+[RÉPONDRE : J'ai évalué Docker. Il m'aurait fallu écrire un Dockerfile,
+gérer un registry, potentiellement Kubernetes pour l'orchestration.
+Pour un projet solo avec une seule app, Railway me donnait exactement
+ce dont j'avais besoin : build auto depuis GitHub, TLS inclus,
+variables d'environnement isolées, rollback en 2 clics.
+Docker sera pertinent si le projet grandit et nécessite de la portabilité.]"
+
+
+============================================================
+SLIDE 5 — FONCTIONNALITÉS (~45s)
+============================================================
+
+"Les deux modules obligatoires sont implémentés :
+gestion des comptes avec RBAC USER/ADMIN,
+et les ressources documentaires avec filtres et approbation admin.
+
+Le module au choix que j'ai retenu, c'est les diagnostics Holmes et Rahe.
+Ce choix est pertinent métier : c'est un outil scientifiquement validé,
+largement utilisé en psychologie du travail.
+
+Tout est accessible depuis le web ET depuis le mobile."
+
+
+============================================================
+SLIDE 6 — TITRE DÉPLOIEMENT (~15s)
+============================================================
+
+"Passons au plan de déploiement."
+
+
+============================================================
+SLIDE 7 — GIT FLOW (~1 min)
+============================================================
+
+"J'ai mis en place un Git Flow adapté à un projet solo.
+
+Deux branches protégées : master pour la production,
+et develop pour l'intégration.
+Aucun commit direct n'est autorisé — tout passe par des Pull Requests
+avec CI obligatoirement verte avant de merger.
+
+Les branches de travail suivent une convention stricte :
+feature/, fix/, security/, docs/,
+avec des préfixes de commit conventionnels : feat:, fix:, ci:."
+
+
+============================================================
+SLIDE 8 — ENVIRONNEMENTS (~1 min)
+============================================================
+
+"J'ai trois environnements distincts.
+
+Le développement en local : dotnet run pour l'API sur le port 5289,
+npm run dev pour le web, WampServer pour MySQL.
+
+L'environnement de CI sur GitHub Actions, Ubuntu Latest,
+qui exécute build, tests, lint et scan à chaque push.
+
+Et la production sur Railway, avec déploiement automatique
+au merge sur master.
+
+Concernant les secrets : en local ils sont dans appsettings.Development.json
+— non commité. En CI, dans les GitHub Secrets.
+En production, dans les Railway Variables.
+Zéro secret dans le code source.
+
+En cas de problème, le rollback Railway prend moins de 2 minutes."
+
+
+============================================================
+SLIDE 9 — TITRE CI/CD (~10s)
+============================================================
+
+"Le pipeline CI/CD."
+
+
+============================================================
+SLIDE 10 — PIPELINE (~1 min 30s)
+============================================================
+
+"Le pipeline GitHub Actions comporte 4 jobs.
+
+Job 1 : build et tests de l'API .NET. Il setup .NET 9,
+restore, build en Release, et exécute les tests xUnit.
+
+Job 2 : lint et build du frontend React.
+npm ci avec --ignore-scripts pour la sécurité supply chain,
+puis ESLint et le build Vite.
+
+Job 3 : scan de sécurité avec Trivy — il détecte les CVE
+CRITICAL et HIGH sur les dépendances .NET.
+
+Job 4 : analyse SonarCloud — qualité de code statique,
+avec un Quality Gate bloquant.
+
+Le pipeline se déclenche sur tous les push et PR
+vers develop et master."
+
+
+============================================================
+SLIDE 11 — SÉCURITÉ DU PIPELINE (~1 min)
+============================================================
+
+"J'ai appliqué plusieurs mesures de sécurité dans le pipeline lui-même.
+
+Les actions GitHub tierces sont épinglées sur leur hash SHA complet,
+pas sur un tag mutable comme @v4. Ça protège contre les supply chain attacks
+— si quelqu'un compromise l'action upstream, mon CI continue d'utiliser
+la version que j'ai validée.
+
+npm ci avec --ignore-scripts empêche l'exécution de scripts
+arbitraires lors de l'installation des dépendances.
+
+Les tokens — SONAR_TOKEN, JWT_KEY — sont passés via des variables
+d'environnement et non interpolés directement dans les commandes,
+pour éviter qu'ils apparaissent dans les logs.
+
+Un déploiement en production nécessite que les 4 jobs soient verts
+ET une approbation manuelle via GitHub Environments.
+C'est le verrou de déploiement."
+
+
+============================================================
+SLIDE 12 — TITRE MAINTENANCE (~10s)
+============================================================
+
+"Plan de maintenance."
+
+
+============================================================
+SLIDE 13 — GITHUB ISSUES (~1 min)
+============================================================
+
+"Pour la gestion des évolutions et incidents, j'utilise GitHub Issues
+avec une configuration structurée.
+
+Des labels sémantiques : bug, enhancement, security, documentation,
+veille, priority:high.
+
+Des milestones alignés sur les livrables :
+v1.0.0 pour le Bloc 2, v1.1.0 pour le Bloc 3,
+et v2.0.0 pour les évolutions futures comme le reset de mot de passe.
+
+Le flux de traitement est : détection → triage → développement
+→ Pull Request → merge avec CI verte.
+
+J'ai également mis en place un monitoring automatique — le SIEM —
+qui ouvre et ferme des tickets GitHub automatiquement
+quand l'API de production est indisponible."
+
+
+============================================================
+SLIDE 14 — TITRE SÉCURISATION (~10s)
+============================================================
+
+"Plan de sécurisation."
+
+
+============================================================
+SLIDE 15 — OWASP TOP 10 (~1 min 30s)
+============================================================
+
+"J'ai analysé les 10 vulnérabilités de l'OWASP Top 10
+et calculé un score de criticité pour chacune.
+
+Les principales :
+
+A01 Broken Access Control — score 6, le plus critique.
+Couvert : JWT avec RBAC, tous les endpoints sensibles
+sont décorés [Authorize(Roles='ADMIN')].
+
+A03 Injection SQL — couvert par Entity Framework Core
+qui génère exclusivement des requêtes paramétrées.
+Zéro SQL brut dans le code.
+
+A07 Authentication Failures — partiel. J'ai sécurisé le JWT,
+mais le rate limiting sur le login et la politique
+de complexité de mot de passe sont planifiés.
+
+A05 Security Misconfiguration — partiel. Le CORS est actuellement
+AllowAnyOrigin en développement. En production, il faut
+le restreindre à l'URL Railway uniquement — c'est planifié."
+
+
+============================================================
+SLIDE 16 — ACTIONS CORRECTIVES (~1 min)
+============================================================
+
+"Concrètement, ce qui est implémenté :
+
+JWT RBAC sur tous les endpoints sensibles.
+La clé JWT est sortie du code source — elle est dans les secrets.
+EF Core pour toutes les requêtes — zéro injection possible.
+Trivy dans le CI pour détecter les composants vulnérables.
+SHA pinning sur les actions GitHub tierces.
+
+Ce qui est planifié : rate limiting sur le login,
+restriction CORS, et complexité de mot de passe.
+
+Au total, j'ai couvert 90% des risques identifiés
+sur les 9 risques applicables — A10 ne s'applique pas
+car CESIZen ne fait aucun appel vers des ressources externes."
+
+
+============================================================
+SLIDE 17 — TITRE RGPD (~10s)
+============================================================
+
+"RGPD et données personnelles."
+
+
+============================================================
+SLIDE 18 — DONNÉES (~1 min)
+============================================================
+
+"CESIZen collecte trois types de données.
+
+Des données classiques : email et mot de passe — le mot de passe
+est haché avec BCrypt, jamais stocké en clair.
+
+Et surtout des résultats de diagnostic de stress.
+Ces données relèvent de l'article 9 du RGPD — données de santé.
+C'est un point d'attention fort.
+
+Mesures de protection : HTTPS automatique via Railway,
+accès aux diagnostics strictement limité à l'utilisateur concerné,
+séparation totale développement/production — aucune donnée réelle
+en environnement de dev,
+et suppression en cascade : supprimer un compte supprime
+tous ses diagnostics associés.
+
+La durée de rétention est fixée à 2 ans maximum."
+
+
+============================================================
+SLIDE 19 — TITRE GESTION DE CRISE (~10s)
+============================================================
+
+"Gestion de crise."
+
+
+============================================================
+SLIDE 20 — SCÉNARIOS (~1 min)
+============================================================
+
+"J'ai documenté 4 scénarios de crise avec des niveaux de priorité.
+
+P1 — critique : fuite de données. Réponse : isolation du service
+sur Railway, rotation immédiate des credentials,
+et notification CNIL dans les 72 heures — obligation légale RGPD.
+
+P1 — compromise du pipeline CI/CD : désactivation immédiate,
+reset de tous les secrets, audit des commits récents.
+
+P2 — indisponibilité : vérification du statut Railway,
+rollback sur la version stable précédente.
+
+P3 — intrusion détectée : analyse des logs, ticket security GitHub,
+hotfix via une branche dédiée.
+
+RTO à 2 heures, RPO à 24 heures.
+Chaque incident donne lieu à un post-mortem documenté
+dans GitHub Issues."
+
+
+============================================================
+SLIDE 21 — TITRE VEILLE (~10s)
+============================================================
+
+"Veille technologique."
+
+
+============================================================
+SLIDE 22 — VEILLE (~1 min 30s)
+============================================================
+
+"Pour ma veille, j'ai mis en place un processus avec plusieurs sources.
+
+La NVD et l'ANSSI pour les CVE quotidiennes — c'est la base
+pour suivre les vulnérabilités qui touchent les composants que j'utilise.
+OWASP pour les guides et cheat sheets de sécurité.
+Le blog officiel Microsoft pour les évolutions .NET.
+Et TLDR Security pour une synthèse hebdomadaire digeste.
+
+J'ai aussi une partie automatisée : Trivy et SonarCloud
+dans le CI détectent les problèmes dès qu'un nouveau commit arrive.
+
+Concrètement, cette veille a eu un impact direct sur le projet.
+C'est grâce à elle que j'ai épinglé les GitHub Actions sur leur SHA,
+que j'ai ajouté --ignore-scripts à npm ci,
+que j'ai sorti les tokens des commandes shell,
+et que j'ai structuré l'analyse OWASP.
+
+[→ QUESTION POSSIBLE : Est-ce que tu as utilisé des outils d'IA ?]
+[RÉPONDRE : Oui, j'ai utilisé Claude comme outil d'assistance,
+notamment pour structurer certaines analyses — OWASP, STRIDE —
+et pour déboguer des configurations CI/CD complexes.
+Mais c'est moi qui ai pris toutes les décisions techniques :
+le choix de Railway, la structure du pipeline, les mesures de sécurité.
+Les outils d'IA m'ont aidé à aller plus vite, pas à décider à ma place.
+C'est exactement comme un développeur senior qui consulte Stack Overflow
+ou la documentation — l'outil est un moyen, pas un auteur.]"
+
+
+============================================================
+SLIDE 23 — TITRE DÉMONSTRATION (~10s)
+============================================================
+
+"Passons à la démonstration."
+
+
+============================================================
+SLIDE 24 — DÉMONSTRATION (~3 min)
+============================================================
+
+[PASSER SUR LE NAVIGATEUR]
+
+--- ÉTAPE 1 : L'app en production (45s) ---
+Ouvrir : https://cesizen-production-7dc4.up.railway.app/api/StressEvents
+"Voici l'API en production sur Railway — elle retourne les 43 événements Holmes et Rahe."
+
+Aller sur l'URL web Railway (service cesizen-web)
+"Et voici le frontend déployé."
+Se connecter avec un compte → montrer le profil → lancer le test de stress.
+
+--- ÉTAPE 2 : Le pipeline CI/CD (1 min) ---
+Ouvrir : github.com/Clement-Souil/CesiZen → onglet Actions
+"Ici le pipeline. Le dernier run sur master est vert — les 4 jobs ont passé."
+Cliquer sur le run → montrer les 4 jobs : API, Web, Security, SonarCloud.
+"Ce run vert a déclenché le déploiement Railway que vous venez de voir."
+
+--- ÉTAPE 3 : Le verrou de déploiement (45s) ---
+Aller sur l'onglet Pull Requests → ouvrir PR #16 (rouge)
+"Cette PR contient un test qui échoue intentionnellement.
+Le job API est rouge — le deploy est automatiquement bloqué.
+Aucun code non testé ne peut atteindre la production."
+
+Ouvrir PR #17 (rouge sécurité)
+"Celle-ci simule une vulnérabilité détectée par Trivy.
+Même résultat : le pipeline bloque avant d'atteindre le deploy."
+
+--- ÉTAPE 4 : Monitoring SIEM (30s) ---
+Rester sur GitHub → onglet Actions → chercher 'API Health Check Monitoring'
+"Ce workflow tourne toutes les 15 minutes.
+S'il détecte une indisponibilité de l'API, il ouvre automatiquement
+un incident dans GitHub Issues. Quand l'API revient, il ferme le ticket."
+
+
+============================================================
+SLIDE 25 — BILAN (~45s)
+============================================================
+
+"Pour résumer ce qui a été livré :
+L'environnement de production est déployé et opérationnel.
+Le pipeline CI/CD est automatisé avec 4 contrôles.
+Le versioning suit Git Flow avec branches protégées.
+Le ticketing est configuré avec labels et milestones.
+L'analyse OWASP est complète avec 90% de couverture.
+Le RGPD est pris en compte avec les mesures adaptées aux données de santé.
+4 scénarios de gestion de crise sont documentés.
+Et la veille technologique est active avec des sources multiples."
+
+
+============================================================
+SLIDE 26 — MERCI / QUESTIONS (~30s)
+============================================================
+
+"Merci pour votre attention.
+Je suis disponible pour vos questions."
+
+
+============================================================
+RÉPONSES PRÉPARÉES AUX QUESTIONS PROBABLES
+============================================================
+
+Q : Pourquoi pas Docker ?
+R : "J'ai évalué Docker. Pour un projet solo, Railway couvre exactement
+le besoin : build auto, TLS, variables isolées, rollback rapide.
+Docker apporterait de la portabilité — utile si on change d'hébergeur
+ou si on ajoute des services comme Redis. C'est prévu en v2."
+
+Q : C'est quoi le STRIDE ?
+R : "STRIDE est une méthode de modélisation des menaces développée par Microsoft.
+Chaque lettre correspond à un type d'attaque : Spoofing (usurpation d'identité),
+Tampering (modification de données), Repudiation (nier une action),
+Information Disclosure (fuite), Denial of Service, Elevation of Privilege.
+J'ai analysé 28 menaces sur 5 composants, avec 3 cycles de révision."
+
+Q : Différence test unitaire / fonctionnel ?
+R : "Un test unitaire vérifie une logique isolée — par exemple,
+que le score 149 est bien classifié 'Faible' et pas 'Modéré'.
+Un test fonctionnel vérifie un comportement bout en bout —
+par exemple, POST /login avec des bons credentials retourne bien un token JWT.
+Les deux sont complémentaires."
+
+Q : Le SIEM c'est quoi exactement ?
+R : "SIEM signifie Security Information and Event Management.
+Dans mon cas, c'est un workflow GitHub Actions qui s'exécute
+toutes les 15 minutes, ping l'API de production,
+et crée ou ferme des tickets GitHub en fonction de la réponse.
+C'est une version simplifiée mais fonctionnelle des systèmes
+de monitoring utilisés en entreprise."
+
+Q : La réinitialisation de mot de passe ?
+R : "Ce que j'ai implémenté, c'est le changement de mot de passe —
+l'utilisateur doit connaître son ancien mot de passe.
+La vraie réinitialisation par email nécessiterait un service SMTP
+ou une intégration SendGrid. C'est documenté comme perspective d'évolution
+dans les milestones GitHub — v2.0.0."
+
+Q : Tu as utilisé de l'IA pour ce projet ?
+R : "Oui, j'ai utilisé Claude comme outil d'assistance.
+Il m'a aidé à structurer des analyses (OWASP, STRIDE),
+à déboguer des configurations CI/CD, et à rédiger certaines documentations.
+Mais toutes les décisions techniques sont les miennes :
+le choix de Railway, l'architecture JWT, la structure du pipeline.
+L'IA est un outil de productivité, comme un linter ou un moteur de recherche.
+Ce qui compte c'est que je comprends et que je peux expliquer
+chaque choix — et c'est ce que je fais aujourd'hui."
