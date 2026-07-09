@@ -1,0 +1,44 @@
+DATE : 2026-07-09
+ACTION : Vérification et correction du script oral + Guide de préparation face au PPTX actuel
+
+CONSTAT :
+Clément a demandé si le script oral et le guide de préparation correspondaient
+toujours au contenu réel du PPTX après toutes les corrections de la session
+(tests, Trivy, branch protection, SonarCloud). Vérification par comparaison
+directe du texte extrait du PPTX actuel avec le script — plusieurs décalages
+réels trouvés.
+
+DÉCALAGES CORRIGÉS DANS LE SCRIPT (2026-07-07_script-soutenance-20slides.txt) :
+- Slide 8 (Pipeline ci.yml) : "4 jobs" → "5 jobs", ajout de la description du
+  Job 5 (Deploy Gate) absente du script, précision sur les 2 scans Trivy
+  (backend + frontend) au lieu d'un seul
+- Slide 9 (Sécurité pipeline) : ajout d'une phrase sur l'analyse SonarCloud
+  CI uniquement (sans Automatic Analysis, correction faite dans la session)
+- Slide 18 (Démo, étape 3) : "4 jobs" → "5 jobs"
+- Aide-mémoire : "4 jobs CI/CD" → "5 jobs" ; port API local "5000" → "5289"
+  (vérifié dans launchSettings.json — 5289 est bien le port réel configuré) ;
+  ajout de "47 tests unitaires (39 xUnit + 8 Vitest)", absent jusque-là
+- Ajout de 2 nouvelles réponses préparées en fin de script : la nuance
+  Trivy fs/image + pourquoi pas Snyk (question probable sur les conteneurs),
+  et le fonctionnement JWT/RBAC/SHA en version condensée pour l'oral
+
+DÉCALAGE CORRIGÉ DANS LE GUIDE (Guide_Preparation_Soutenance.docx) :
+- 4 occurrences de "localhost:5000" (chapitre 1, lancement de l'API) →
+  corrigées en "localhost:5289", cohérent avec le port réellement configuré
+  et déjà corrigé dans le Dossier Technique. Le chapitre 5.5 (questions
+  approfondies RBAC/JWT/SHA/supply chain/Snyk) était déjà à jour depuis la
+  passe finale précédente — vérifié, rien à changer là-dessus.
+
+MÉTHODE :
+Extraction du texte complet des 20 slides du PPTX actuel (python-pptx) et
+comparaison ligne à ligne avec le contenu du script — plus fiable qu'une
+relecture visuelle pour détecter les chiffres obsolètes.
+
+POURQUOI MAINTENANT :
+Dernière vérification de cohérence avant la soutenance — s'assurer qu'aucun
+chiffre annoncé à l'oral ne contredit ce que le jury voit sur les slides ou
+en démonstration live.
+
+COHÉRENCE AVEC LE PROJET :
+Bloc 3 critère "Prise de parole maîtrisée" (/1 pt) — un script cohérent avec
+les supports évite les hésitations ou corrections en direct pendant l'oral.

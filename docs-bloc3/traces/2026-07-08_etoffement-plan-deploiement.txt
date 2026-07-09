@@ -1,0 +1,79 @@
+DATE : 2026-07-08
+ACTION : Étoffement complet du Plan_Deploiement_CESIZen.docx 
+
+CE QU'ON A FAIT :
+Réécriture intégrale du document, en conservant le style graphique existant
+(Arial, navy #1E2761, fond clair #EEF2FF pour les en-têtes de tableau) mais en
+multipliant par ~6 le contenu, à partir de sources réelles du projet plutôt
+que de remplissage générique :
+- Extraction du contenu réel de .github/workflows/ci.yml (5 jobs, dont le job
+  "deploy" avec Environment GitHub + Required reviewer — non documenté avant)
+- Extraction du contenu réel de .github/workflows/monitoring.yml (cron 15 min,
+  auto-création/fermeture d'Issues GitHub)
+- Reprise des 3 branches de démonstration réelles (demo/pipeline-ok,
+  demo/pipeline-fail-tests, demo/pipeline-fail-security — PR #15/#16/#17)
+  comme preuve factuelle que le pipeline bloque réellement des scénarios
+  d'échec distincts (test cassé vs vulnérabilité de sécurité)
+- Reprise des 3 incidents réels de configuration rencontrés et corrigés sur
+  Railway (Nixpacks encoding, EBUSY .vite, syntaxe serve@14) comme retour
+  d'expérience opérationnel
+- Ajout d'un comparatif Railway vs Azure vs AWS vs VPS+Docker (5 critères)
+- Ajout d'une section coûts/dimensionnement et d'une section limites/perspectives
+- Ajout d'un glossaire et d'une annexe de référence aux fichiers de config
+
+14 sections + 2 annexes, ~4 940 mots, 26 tableaux, plusieurs extraits de code
+réels (YAML) formatés en bloc monospace sur fond sombre.
+
+POURQUOI MAINTENANT :
+Clément a demandé d'étoffer ce document à un maximum de 20 pages pour enrichir
+le dossier de rendu Bloc 3, en s'appuyant sur l'ensemble des documents déjà
+produits (Dossier Technique, traces, guide de préparation) plus une nouvelle
+passe sur le code source réel du projet (workflows CI/CD, structure des tests,
+git log) pour garantir un contenu factuel et non générique.
+
+POINT D'ATTENTION TECHNIQUE :
+Une première version du document, générée avec un saut de page forcé avant
+chaque titre de section et les deux fichiers YAML complets en annexe
+(243 lignes), aurait dépassé 30 pages. Corrigé en :
+- supprimant les sauts de page forcés (le contenu s'enchaîne naturellement)
+- remplaçant les annexes YAML intégrales par une annexe de référence
+  compacte (tableau pointant vers les fichiers versionnés dans le dépôt)
+
+UTILITÉ POUR LE DOSSIER BLOC 3 :
+Ce document devient la version détaillée du § 2 "Plan de déploiement" du
+Dossier_Technique_Bloc3_CESIZen.docx (qui reste la version synthétique,
+15-20 pages tous plans confondus). Le Plan_Deploiement_CESIZen.docx peut être
+joint en annexe pour démontrer un niveau de détail et de preuve supérieur au
+strict nécessaire — cohérent avec le critère "Précision des étapes,
+environnements, ressources, automatisations" noté sur 3 points.
+
+DERNIÈRE PASSE (même jour, fin de session) :
+Après les correctifs de la session (tests de bornes, Trivy frontend,
+protection de branches, resynchronisation develop, conflit SonarCloud),
+le document a été régénéré pour coller à l'état réel du projet :
+- §4.2 tableau des PR : ajout de #19 (resync develop), #20 (tests de
+  bornes Vitest), #22 (Trivy frontend)
+- §4.3 protection de branches : description exacte de la config restaurée
+  (enforce_admins, 4 checks nommés, 0 review requise avec justification
+  du contexte individuel — l'auto-approbation étant impossible)
+- §6.3 : mention des 8 tests Vitest frontend (getInterpretation, bornes
+  149/150/299/300) exécutés en local, intégration CI en perspective
+- §6.4 : le job Security documente désormais les DEUX scans Trivy
+  (NuGet backend + npm frontend), le rôle SCA (équivalent Snyk), et la
+  clarification mode fs vs mode image (pas d'image à scanner en PaaS)
+- §8.4 : 3 incidents supplémentaires documentés (protection de branches
+  absente, conflit analyse automatique/CI SonarCloud, Quality Gate sur la
+  PR de resynchronisation)
+- §13 : 2 limites ajoutées (tests frontend hors CI ; pas de scan d'image
+  ni de DAST, avec évolutions proposées)
+- Annexe A : compte de lignes ci.yml actualisé (145)
+Résultat : ~5 360 mots, 26 tableaux, ~18 pages estimées (max 20 respecté).
+
+COHÉRENCE AVEC LE PROJET :
+- Bloc 3 critère "1 environnement configuré avec automatisations = 2 pts" :
+  le job Deploy Gate + le monitoring auto-remédiant sont désormais détaillés
+- Bloc 3 critère "Outil de versioning pertinent configuré /2" : preuve par
+  l'historique réel de PR (#12 à #18) plutôt que par description théorique
+- Bloc 3 critère "Cohérence avec le contexte et les contraintes /1" :
+  section 2 (contraintes) et section 11 (comparatif) justifient explicitement
+  le choix de Railway par rapport aux alternatives étudiées

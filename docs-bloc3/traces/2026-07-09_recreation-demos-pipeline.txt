@@ -1,0 +1,41 @@
+DATE : 2026-07-09
+ACTION : Recréation des démonstrations de pipeline CI/CD (fail-tests, fail-security)
+
+CONSTAT :
+Vérification demandée par Clément avant la soutenance : les 3 PR de démo
+créées le 06/07 (#15 pipeline-ok, #16 pipeline-fail-tests, #17
+pipeline-fail-security) n'avaient JAMAIS eu de run CI (aucun check-run trouvé
+sur leurs commits, ni via l'API ni via gh run list). Leur diff par rapport à
+master actuel montrait aussi une dérive énorme (suppression de
+monitoring.yml, de fichiers de tests entiers, de documents) — elles dataient
+d'un état de master très ancien, inutilisables telles quelles pour la démo.
+
+CE QU'ON A FAIT :
+1. demo/pipeline-ok : pas de recréation nécessaire — le run CI le plus
+   récent sur master lui-même (déjà vérifié vert dans la session) sert
+   directement de preuve du cas nominal. Plus simple et toujours à jour.
+2. demo/pipeline-fail-tests-v2 (PR #24) : nouvelle branche depuis master
+   actuel, réintroduit le même bug qu'à l'origine (seuil 100 au lieu de 150
+   sur StressResult_ScoreBelow150_ShouldBeLowStress). Vérifié : job
+   API — Build & Test échoue, Security/Sonar/Deploy ignorés — résultat
+   attendu confirmé par un run CI réel.
+3. demo/pipeline-fail-security-v2 (PR #25) : nouvelle branche depuis master
+   actuel, réintroduit le tag mutable @master sur trivy-action + exit-code
+   à 1. Vérifié : Trivy passe (aucune CVE réelle actuellement dans les
+   dépendances — normal, il ne détecte que des CVE connues, pas un tag
+   mutable), mais le check "SonarCloud Code Analysis" échoue bien —
+   résultat global de la PR : échec confirmé par un run CI réel.
+
+LES ANCIENNES PR (#15, #16, #17) SONT LAISSÉES TELLES QUELLES :
+Toujours ouvertes, toujours en conflit, aucun run CI dessus. Ne pas les
+utiliser pour la démo — utiliser #24 et #25 (+ master directement pour le
+cas nominal).
+
+POURQUOI MAINTENANT :
+Clément voulait tester lui-même le déroulé complet de la démo avant l'oral
+et s'assurer que les résultats affichés correspondent à ce qui est annoncé
+dans le script — impossible avec des PR dont la CI n'avait jamais tourné.
+
+COHÉRENCE AVEC LE PROJET :
+Bloc 3 critère "Démonstration versioning + ticketing efficace et fluide"
+(/1 pt) — la démo doit être fiable et reproductible en conditions réelles.

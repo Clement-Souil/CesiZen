@@ -1,0 +1,59 @@
+DATE : 2026-07-08
+ACTION : Mise à jour et extension du Dossier Technique Bloc 3 (8 → 15-16 pages)
+
+CONSTAT :
+Le Dossier_Technique_Bloc3_CESIZen.docx est LE document principal à rendre
+(15-20 pages exigées, couvrant les 3 plans : déploiement, maintenance,
+sécurisation). Il faisait ~8 pages (2 381 mots) et ne reflétait pas les
+travaux de la session du 08/07.
+
+CE QU'ON A FAIT :
+Régénération complète (script docx-js), même identité visuelle que la version
+précédente (navy #1A2744, ambre #C97B00, titres Cambria, en-têtes de tableau
+navy, statuts vert/ambre/rouge, couverture pleine page navy, filets ambre
+en en-tête/pied de page). Résultat : ~4 430 mots, 21 tableaux, 15-16 pages.
+
+CONTENU CONSERVÉ (chiffres inchangés, vérifiés) :
+- STRIDE : 28 menaces, 5 composants, 3 cycles de révision, 78,6 %
+- OWASP Top 10 : criticité Probabilité × Impact, 90 % de couverture
+- RGPD : Art. 9, rétention 2 ans, CNIL 72 h
+- Gestion de crise : 4 scénarios P1/P2/P3, RTO 2 h, RPO 24 h
+- Maintenance : 7 labels, 3 milestones, flux 6 étapes, SIEM 15 min
+- Port API local 5289, HMAC-SHA512
+
+NOUVEAUTÉS INTÉGRÉES (état réel du projet au 08/07) :
+- §1.2 Contraintes du projet (individuel, budget, calendrier, blocage Azure)
+- §1.5 Qualité logicielle : 47 tests (39 xUnit backend + 8 Vitest frontend,
+  bornes 149/150/299/300) + preuve par la PR démo #16
+- §2.1 Tableau des PR réelles étendu (#12 à #22, dont #19 resync develop,
+  #20 tests de bornes, #22 Trivy frontend)
+- §2.2 Protection de branches : config exacte restaurée (enforce_admins,
+  4 checks nommés, 0 review avec justification auto-approbation impossible)
+- §2.3 Tableau des secrets par couche (dev / CI / prod)
+- §2.4 Pipeline : job Security à DEUX scans Trivy (NuGet + npm), rôle SCA,
+  clarification mode fs vs image (pas d'image construite en PaaS)
+- §2.6 Validation par la démonstration : 3 PR démo (#15/#16/#17) avec
+  résultats observés + liste des incidents réels corrigés (Nixpacks, EBUSY,
+  serve@14, protection de branches, conflit analyses SonarCloud)
+- §2.7 Justification Railway : comparatif Azure/AWS/VPS résumé
+- §3.2 Exemple de cycle de ticket entièrement automatisé (SIEM)
+- §4.3 NOUVEAU : tableau Défense en profondeur (SAST/SCA/Image/DAST/
+  Supervision) avec statut par couche — répond à la question « comment
+  sais-tu que tes conteneurs sont sûrs ? »
+- §4.6 NOUVEAU : fonctionnement détaillé authentification (BCrypt, JWT
+  HMAC-SHA512, claims, validation middleware, RBAC serveur)
+- §4.8 Tableau des responsabilités et canaux de communication en crise
+  (développeur, client, CNIL, utilisateurs, supports plateforme) — critère
+  grille « escalade, responsabilités, communication »
+- §4.9 NOUVEAU : Bonnes pratiques de développement (critère /1 pt)
+- §5.3 Action de veille supplémentaire : dépréciation CRA → Vite
+- §6 Conclusion : critères mis à jour + paragraphe « limites assumées »
+
+POURQUOI :
+Exigence de rendu : dossier principal 15-20 pages couvrant les 3 plans.
+Le document doit coller parfaitement à l'état réel du projet démontré en
+soutenance (09 ou 10/07/2026).
+
+COHÉRENCE AVEC LE PROJET :
+Couvre l'intégralité de la grille Bloc 3 : déploiement (8 pts),
+maintenance (9 pts), sécurisation (11 pts), qualité du dossier écrit (1 pt).

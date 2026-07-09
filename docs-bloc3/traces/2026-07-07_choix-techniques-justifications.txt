@@ -1,0 +1,174 @@
+DATE : 2026-07-07
+OBJET : Fiche des choix techniques — Justifications pour la soutenance
+
+Ce fichier répond aux questions "Pourquoi X et pas Y ?" que le jury peut poser.
+Toutes les réponses sont courtes (30 secondes max à l'oral).
+
+═══════════════════════════════════════════════════════════════════════════════
+BACKEND
+═══════════════════════════════════════════════════════════════════════════════
+
+Q : Pourquoi .NET 9 ASP.NET Core et pas Node.js ou Java Spring Boot ?
+R : .NET est le framework imposé par le sujet CESI. C'est aussi un choix
+    cohérent avec le marché : .NET est fortement utilisé en entreprise
+    française, notamment dans les ESN. Les performances sont excellentes
+    (ASP.NET Core dépasse Node.js sur les benchmarks HTTP), la typage fort
+    de C# réduit les bugs à la compilation, et l'écosystème NuGet est mature.
+
+Q : Pourquoi Entity Framework Core (Code First) et pas Dapper ou du SQL brut ?
+R : Code First permet de versionner le schéma de base de données avec le code
+    source (migrations EF). Aucune divergence possible entre le modèle objet
+    et la BDD. Les requêtes paramétrées sont automatiques — 0 risque d'injection
+    SQL (A03 OWASP). Dapper aurait été plus performant en lecture pure,
+    mais aurait nécessité de gérer les migrations manuellement.
+
+Q : Pourquoi JWT et pas des sessions serveur ou OAuth2 ?
+R : L'API est sans état (stateless) — aucun stockage de session côté serveur.
+    C'est essentiel pour la scalabilité : n'importe quelle instance Railway
+    peut traiter n'importe quelle requête sans partage de session.
+    OAuth2 aurait nécessité un serveur d'autorisation tiers (Auth0, Keycloak)
+    — une complexité inutile pour ce projet. JWT avec RBAC (rôles USER/ADMIN)
+    couvre exactement le besoin.
+
+Q : Pourquoi MySQL et pas PostgreSQL ?
+R : MySQL via WampServer est l'outil de développement local habituel dans le
+    contexte de formation CESI. Railway supporte MySQL nativement. La
+    compatibilité EF Core est totale. PostgreSQL aurait été un choix équivalent
+    techniquement, mais MySQL était le choix le plus naturel pour réduire
+    la friction entre dev local et production.
+
+═══════════════════════════════════════════════════════════════════════════════
+FRONTEND
+═══════════════════════════════════════════════════════════════════════════════
+
+Q : Pourquoi React 18 et pas Vue.js ou Angular ?
+R : React est imposé par le sujet CESI. C'est aussi le framework le plus
+    demandé sur le marché (61% des offres d'emploi frontend en France).
+    L'écosystème est massif (shadcn/ui, Tailwind CSS). TypeScript + React
+    offre une excellente DX avec la détection des erreurs à la compilation.
+
+Q : Pourquoi Vite et pas Create React App (CRA) ?
+R : CRA est déprécié depuis 2023 (abandon officiel de la communauté React).
+    Vite est le standard actuel : démarrage en < 1 seconde (CRA prenait 15-30s),
+    Hot Module Replacement instantané, build de production 5-10x plus rapide.
+    C'est un choix de veille technologique appliqué concrètement.
+
+Q : Pourquoi Tailwind CSS + shadcn/ui ?
+R : Tailwind évite le conflit de classes CSS global (pas de cascade imprévue).
+    shadcn/ui fournit des composants accessibles (ARIA) et stylisables.
+    Combinés, ils permettent de construire une UI professionnelle sans
+    écrire de CSS custom — gain de temps significatif sur ce projet individuel.
+
+Q : Pourquoi React Native + Expo pour le mobile et pas Flutter ?
+R : Partage de logique métier avec le frontend web (même langage TypeScript,
+    mêmes appels API). Expo simplifie la build et le déploiement (QR code
+    Expo Go pour la démo, pas besoin de compiler un APK).
+    Flutter aurait nécessité d'apprendre Dart — overhead non justifié.
+
+═══════════════════════════════════════════════════════════════════════════════
+DÉPLOIEMENT & INFRASTRUCTURE
+═══════════════════════════════════════════════════════════════════════════════
+
+Q : Pourquoi Railway et pas Azure, AWS ou Docker Compose ?
+R : Azure for Students bloquait MySQL dans les régions EU lors de nos tests.
+    AWS est puissant mais la courbe d'apprentissage (IAM, VPC, RDS) est
+    disproportionnée pour un projet individuel étudiant.
+    Docker Compose nécessite une VM ou un serveur à gérer soi-même.
+    Railway propose CI/CD automatique au merge, HTTPS, MySQL managé et
+    monitoring en quelques clics — le meilleur rapport valeur/complexité.
+
+Q : Pourquoi un PaaS (Railway) et pas une VM ou du bare metal ?
+R : Un PaaS gère la couche infrastructure (OS, TLS, reverse proxy, scalabilité)
+    automatiquement. Je peux me concentrer sur le code applicatif.
+    Pour un projet de formation avec budget limité, c'est le choix optimal.
+    En entreprise, Docker + Kubernetes serait la cible pour les déploiements
+    à grande échelle.
+
+═══════════════════════════════════════════════════════════════════════════════
+VERSIONING & CI/CD
+═══════════════════════════════════════════════════════════════════════════════
+
+Q : Pourquoi Git Flow et pas Trunk-Based Development (TBD) ?
+R : Git Flow structure explicitement les branches : master (production),
+    develop (intégration), feature/, fix/, security/. Pour un projet
+    étudiant avec démonstration de la gestion des branches, c'est plus
+    pédagogique et lisible que TBD. TBD est adapté aux équipes avec tests
+    d'intégration très rapides et déploiements continus — c'est une perspective
+    d'évolution pertinente à mentionner.
+
+Q : Pourquoi GitHub Actions et pas GitLab CI ou Jenkins ?
+R : Le code source est sur GitHub — GitHub Actions est natif, sans configuration
+    de serveur externe. L'intégration avec GitHub Secrets, les Environments
+    et la marketplace d'actions est transparente. Jenkins nécessiterait une
+    infrastructure dédiée. GitLab CI nécessiterait de migrer le repo.
+
+Q : Pourquoi SonarCloud et pas un autre outil SAST ?
+R : SonarCloud est gratuit pour les projets publics, supporte .NET et
+    TypeScript nativement, et s'intègre directement dans GitHub Actions.
+    Il fournit un Quality Gate configurable qui bloque les PRs.
+    SNYK ou Checkmarx sont des alternatives — mais payantes sans tier gratuit
+    suffisant pour ce projet.
+
+═══════════════════════════════════════════════════════════════════════════════
+MODULE AU CHOIX
+═══════════════════════════════════════════════════════════════════════════════
+
+Q : Pourquoi les diagnostics Holmes & Rahe comme module au choix ?
+R : Trois raisons :
+    1. Pertinence métier : CESIZen est une app de bien-être mental. Le
+       diagnostic de stress est LE module qui ancre l'application dans son
+       domaine.
+    2. Crédibilité scientifique : l'échelle Holmes & Rahe (1967) est reconnue
+       dans la littérature médicale — 43 événements de vie avec des poids
+       validés empiriquement.
+    3. Complexité technique intéressante : seed de 43 événements au démarrage,
+       calcul de score dynamique, 3 niveaux d'interprétation, sauvegarde et
+       historique, gestion admin des événements — un module riche qui
+       démontre l'ensemble des couches applicatives.
+
+Q : Pourquoi les seuils (150/300) sont-ils codés en dur dans le frontend ?
+R : C'est une limite identifiée et assumée. Ces seuils sont définis par
+    l'échelle Holmes & Rahe elle-même et ne changent pas. Les rendre
+    configurables par l'admin serait une sur-ingénierie pour ce contexte.
+    C'est documenté comme axe d'évolution dans le dossier technique.
+
+═══════════════════════════════════════════════════════════════════════════════
+SÉCURITÉ
+═══════════════════════════════════════════════════════════════════════════════
+
+Q : Pourquoi OWASP Top 10 comme référentiel et pas ISO 27001 ou ANSSI ?
+R : OWASP Top 10 est le référentiel de sécurité applicative le plus reconnu
+    mondialement. Il est spécifiquement conçu pour les applications web —
+    exactement notre contexte. ISO 27001 est un standard de management de la
+    sécurité de l'information (gouvernance, organisation) — trop large pour
+    un audit applicatif. L'ANSSI recommande elle-même OWASP pour la sécurité
+    des applications web.
+
+Q : Pourquoi tu n'as pas mis en place de rate limiting dès le départ ?
+R : C'est un choix de priorisation. Le rate limiting sur le login (A07)
+    nécessite soit un middleware ASP.NET Core (AspNetCoreRateLimit), soit
+    une solution infrastructure (Railway ne le fournit pas nativement).
+    Le risque est identifié, documenté en tant que "PLANIFIÉ" avec la
+    correction concrète prévue pour la v2. C'est une démarche mature :
+    identifier, documenter, planifier, implémenter.
+
+Q : AllowAnyOrigin() en production, c'est pas un problème ?
+R : Oui, c'est un risque A05 (Security Misconfiguration) identifié dans
+    l'analyse OWASP et marqué "PLANIFIÉ". La correction est de restreindre
+    le CORS à l'URL Railway du frontend uniquement. En production Railway,
+    les endpoints sensibles sont protégés par JWT — le CORS ouvert est une
+    faiblesse de défense en profondeur, pas une vulnérabilité critique.
+
+═══════════════════════════════════════════════════════════════════════════════
+AIDE-MÉMOIRE FINAL — Si on te colle
+═══════════════════════════════════════════════════════════════════════════════
+
+"Je ne sais pas" est toujours mieux qu'une réponse inventée. Mais avant d'y
+arriver, essaie :
+
+1. "C'est un choix de [contrainte/contexte] : [raison courte]."
+2. "J'ai choisi X plutôt que Y car [avantage principal], avec comme limite [limite connue]."
+3. "C'est une limite identifiée dans le dossier — la correction planifiée est [solution]."
+
+Aucune technologie n'est parfaite. Le jury apprécie que tu connaisses les
+limites de tes choix autant que leurs avantages.
